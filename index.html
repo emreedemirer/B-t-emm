@@ -1,17 +1,639 @@
-﻿<!doctype html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FinansPro v1.0</title>
-    <!-- Vercel ve Vite için gerekli modern yapı -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bütçem v11 - Gelir Modülü</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Tooltip */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 180px;
+            background-color: #334155;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 6px;
+            position: absolute;
+            z-index: 50;
+            bottom: 110%;
+            left: 50%;
+            margin-left: -90px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 10px;
+            pointer-events: none;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #334155 transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800">
+<body class="text-slate-900">
     <div id="root"></div>
-    <!-- Ana React dosyasını buradan çağırıyoruz -->
-    <script type="module" src="/src/main.jsx"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- İKONLAR ---
+        const Icons = {
+            Dashboard: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></svg>,
+            Wallet: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></svg>,
+            Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" /></svg>,
+            CreditCard: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" /></svg>,
+            Coins: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6" /><path d="M18.09 10.37A6 6 0 1 1 10.34 18" /><path d="M7 6h1v4" /><path d="m16.71 13.88.7.71-2.82 2.82" /></svg>,
+            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>,
+            Plus: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>,
+            Trash: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>,
+            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" /><path d="m9 12 2 2 4-4" /></svg>,
+            Circle: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>,
+            Lightning: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>,
+            History: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l4 2" /></svg>,
+            Close: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Info: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="16" y2="12" /><line x1="12" x2="12.01" y1="8" y2="8" /></svg>
+        };
+
+        const SimpleChart = ({ data }) => {
+            const maxVal = Math.max(...data.map(d => Math.max(d.Gelir, d.Gider, d.Tasarruf)), 1);
+            return (
+                <div className="w-full h-48 flex items-end justify-between gap-1 mt-4 px-2">
+                    {data.map((d, i) => (
+                        <div key={i} className="flex flex-col items-center flex-1 group relative h-full justify-end">
+                            <div className="flex items-end gap-[2px] w-full justify-center h-full">
+                                <div style={{ height: `${(d.Gelir / maxVal) * 100}%` }} className="w-1.5 bg-emerald-500 rounded-t-sm transition-all"></div>
+                                <div style={{ height: `${(d.Gider / maxVal) * 100}%` }} className="w-1.5 bg-rose-500 rounded-t-sm transition-all"></div>
+                                <div style={{ height: `${(d.Tasarruf / maxVal) * 100}%` }} className="w-1.5 bg-indigo-500 rounded-t-sm transition-all"></div>
+                            </div>
+                            <span className="text-[9px] text-slate-400 mt-1">{d.name.substring(0, 3)}</span>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+
+        // --- VERİ ŞABLONLARI ---
+        const INITIAL_INCOME = [
+            { id: 'inc-1', name: "Maaş", planned: 0, actual: 0 },
+            { id: 'inc-2', name: "Ek Ders", planned: 0, actual: 0 },
+            { id: 'inc-3', name: "Özel Ders", planned: 0, actual: 0 },
+            { id: 'inc-4', name: "Temettü / Yatırım", planned: 0, actual: 0 },
+            { id: 'inc-5', name: "Halka Arz", planned: 0, actual: 0 },
+            { id: 'inc-6', name: "Diğer Gelirler", planned: 0, actual: 0 },
+        ];
+        const INITIAL_BASIC_NEEDS = [
+            { id: 'basic-emi', name: "Eminevim Taksidi", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-1', name: "Kira / Aidat", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-2', name: "Gıda / Market", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-3', name: "Elektrik", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-4', name: "Su", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-5', name: "Doğalgaz", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-6', name: "İnternet", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-7', name: "Telefon", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-8', name: "Yakıt / Ulaşım", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-9', name: "Eğitim", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-10', name: "Sağlık", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-11', name: "Berber / Kuaför", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-tax-1', name: "MTV Vergisi", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-tax-2', name: "Emlak Vergisi", planned: 0, actual: 0, isPaid: false },
+        ];
+        const INITIAL_DISCRETIONARY = [
+            { id: 'disc-eft', name: "EFT / Havale", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-1', name: "Dışarıda Yemek", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-2', name: "Giyim / Kozmetik", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-3', name: "Sosyal / Eğlence", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-4', name: "Abonelikler", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-5', name: "Bahçe / Hobi", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-6', name: "Çocuk / Oyuncak", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-7', name: "Kredi Kartı (Ekstra)", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-8', name: "Yardım", planned: 0, actual: 0, isPaid: false },
+        ];
+        const INITIAL_SAVINGS = [
+            { id: 'sav-1', name: "BES", planned: 0, actual: 0 },
+            { id: 'sav-2', name: "Borsa (BIST)", planned: 0, actual: 0 },
+            { id: 'sav-3', name: "Altın / Döviz", planned: 0, actual: 0 },
+            { id: 'sav-4', name: "Kripto / Coin", planned: 0, actual: 0 },
+            { id: 'sav-5', name: "Fon", planned: 0, actual: 0 },
+            { id: 'sav-6', name: "TL Nakit", planned: 0, actual: 0 },
+        ];
+
+        const Tooltip = ({ text, children }) => (
+            <div className="tooltip-container flex items-center gap-1">
+                {children}
+                <div className="tooltip-text">{text}</div>
+            </div>
+        );
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [selectedMonthIndex, setSelectedMonthIndex] = useState(new Date().getMonth());
+
+            const [showQuickAdd, setShowQuickAdd] = useState(false);
+            const [quickAmount, setQuickAmount] = useState('');
+            const [quickDesc, setQuickDesc] = useState('');
+            const [quickCategory, setQuickCategory] = useState('');
+            const [quickDate, setQuickDate] = useState(new Date().toISOString().split('T')[0]);
+
+            // --- YÜKLEME ---
+            const loadData = (key, defaultVal) => {
+                const saved = localStorage.getItem(key);
+                return saved ? JSON.parse(saved) : defaultVal;
+            }
+
+            const [monthlyData, setMonthlyData] = useState(() => {
+                const saved = localStorage.getItem('butceData_v11');
+                if (saved) return JSON.parse(saved);
+                const data = {};
+                MONTHS.forEach((_, i) => {
+                    data[i] = {
+                        income: JSON.parse(JSON.stringify(INITIAL_INCOME)),
+                        basicNeeds: JSON.parse(JSON.stringify(INITIAL_BASIC_NEEDS)),
+                        discretionary: JSON.parse(JSON.stringify(INITIAL_DISCRETIONARY)),
+                        savings: JSON.parse(JSON.stringify(INITIAL_SAVINGS))
+                    };
+                });
+                return data;
+            });
+
+            const [installments, setInstallments] = useState(() => loadData('taksitData_v11', []));
+            const [assets, setAssets] = useState(() => loadData('varlikData_v11', [
+                { id: 1, type: "Gram Altın", count: 0, unitPrice: 0, totalValue: 0 },
+                { id: 2, type: "Çeyrek Altın", count: 0, unitPrice: 0, totalValue: 0 },
+                { id: 3, type: "Dolar ($)", count: 0, unitPrice: 0, totalValue: 0 }
+            ]));
+            const [transactions, setTransactions] = useState(() => loadData('islemGecmisi_v11', []));
+
+            // --- KAYDETME ---
+            useEffect(() => localStorage.setItem('butceData_v11', JSON.stringify(monthlyData)), [monthlyData]);
+            useEffect(() => localStorage.setItem('taksitData_v11', JSON.stringify(installments)), [installments]);
+            useEffect(() => localStorage.setItem('varlikData_v11', JSON.stringify(assets)), [assets]);
+            useEffect(() => localStorage.setItem('islemGecmisi_v11', JSON.stringify(transactions)), [transactions]);
+
+            const [newInst, setNewInst] = useState({ name: "", totalAmount: "", installmentCount: 3, startMonthIndex: 0 });
+
+            // --- HESAPLAMALAR ---
+            const getMonthInst = (monthIdx) => installments.filter(inst => {
+                const end = Number(inst.startMonthIndex) + Number(inst.installmentCount) - 1;
+                return monthIdx >= Number(inst.startMonthIndex) && monthIdx <= end;
+            });
+
+            const getSummary = (idx) => {
+                const d = monthlyData[idx];
+                const inc = d.income.reduce((a, c) => a + (Number(c.actual) || 0), 0);
+                const bas = d.basicNeeds.reduce((a, c) => a + (Number(c.actual) || 0), 0);
+                const dis = d.discretionary.reduce((a, c) => a + (Number(c.actual) || 0), 0);
+                const sav = d.savings.reduce((a, c) => a + (Number(c.actual) || 0), 0);
+                const insts = getMonthInst(idx);
+                const instTot = insts.reduce((a, c) => a + c.monthlyAmount, 0);
+                const totExp = bas + dis + instTot;
+                const pdBas = d.basicNeeds.filter(i => i.isPaid).reduce((a, c) => a + (Number(c.actual) || 0), 0);
+                const pdDis = d.discretionary.filter(i => i.isPaid).reduce((a, c) => a + (Number(c.actual) || 0), 0);
+                const pending = totExp - (pdBas + pdDis) - instTot;
+                return { inc, totExp, sav, bas, dis, instTot, pending };
+            };
+
+            const formatMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(v);
+            const formatDate = (d) => new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+
+            const totalAssetVal = assets.reduce((a, c) => a + (Number(c.totalValue) || 0), 0);
+
+            // --- İŞLEMLER ---
+            const updateItem = (type, id, f, v) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].map(i => i.id === id ? { ...i, [f]: f === 'name' ? v : Number(v) } : i) } }));
+            const togglePaid = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].map(i => i.id === id ? { ...i, isPaid: !i.isPaid } : i) } }));
+            const addItem = (type) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: [...p[selectedMonthIndex][type], { id: Date.now(), name: "Yeni Kalem", actual: 0, isPaid: false }] } }));
+            const delItem = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].filter(i => i.id !== id) } }));
+
+            // --- HIZLI EKLE ---
+            const handleQuickAdd = () => {
+                if (!quickAmount || !quickCategory) return;
+                const [type, id] = quickCategory.split('|');
+                const amountToAdd = Number(quickAmount);
+                const dateObj = new Date(quickDate);
+                const targetMonth = dateObj.getMonth();
+
+                setMonthlyData(prev => {
+                    const currentMonthData = prev[targetMonth];
+                    const items = currentMonthData[type];
+                    let catName = "Bilinmeyen";
+                    const updatedItems = items.map(item => {
+                        if (item.id === id) {
+                            catName = item.name;
+                            return { ...item, actual: (Number(item.actual) || 0) + amountToAdd };
+                        }
+                        return item;
+                    });
+
+                    const newTx = { id: Date.now(), date: quickDate, category: catName, amount: amountToAdd, desc: quickDesc || catName, monthIndex: targetMonth, targetType: type, targetId: id };
+                    setTransactions(prevTx => [newTx, ...prevTx]);
+                    return { ...prev, [targetMonth]: { ...prev[targetMonth], [type]: updatedItems } };
+                });
+                setQuickAmount(''); setQuickDesc(''); setShowQuickAdd(false);
+            };
+
+            const delTransaction = (txId) => {
+                const tx = transactions.find(t => t.id === txId);
+                if (!tx) return;
+                setMonthlyData(prev => {
+                    const monthIdx = tx.monthIndex;
+                    const targetType = tx.targetType;
+                    const targetId = tx.targetId;
+                    if (targetType && prev[monthIdx] && prev[monthIdx][targetType]) {
+                        const updatedItems = prev[monthIdx][targetType].map(item => {
+                            if (item.id === targetId || item.name === tx.category) {
+                                return { ...item, actual: Math.max(0, (Number(item.actual) || 0) - Number(tx.amount)) };
+                            }
+                            return item;
+                        });
+                        return { ...prev, [monthIdx]: { ...prev[monthIdx], [targetType]: updatedItems } };
+                    }
+                    return prev;
+                });
+                setTransactions(p => p.filter(t => t.id !== txId));
+            };
+
+            const downloadExcel = () => {
+                let csv = "\uFEFFAy;Grup;Kalem;Tutar;Durum\n";
+                MONTHS.forEach((m, i) => {
+                    const d = monthlyData[i];
+                    d.income.forEach(x => csv += `${m};Gelir;${x.name};${x.actual};-\n`);
+                    d.basicNeeds.forEach(x => csv += `${m};Temel;${x.name};${x.actual};${x.isPaid ? 'Ödendi' : ''}\n`);
+                    d.discretionary.forEach(x => csv += `${m};Keyfi;${x.name};${x.actual};${x.isPaid ? 'Ödendi' : ''}\n`);
+                    d.savings.forEach(x => csv += `${m};Tasarruf;${x.name};${x.actual};-\n`);
+                    getMonthInst(i).forEach(x => csv += `${m};Taksit;${x.name};${x.monthlyAmount};Otomatik\n`);
+                });
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "butce_yedek.csv";
+                link.click();
+            };
+
+            const updateAsset = (id, field, val) => {
+                setAssets(prev => prev.map(a => {
+                    if (a.id === id) {
+                        const newVal = field === 'type' ? val : (Number(val) || 0);
+                        const updated = { ...a, [field]: newVal };
+                        if (field === 'count' || field === 'unitPrice') {
+                            updated.totalValue = updated.count * updated.unitPrice;
+                        }
+                        return updated;
+                    }
+                    return a;
+                }));
+            };
+            const addAsset = () => setAssets([...assets, { id: Date.now(), type: "Yeni", count: 0, unitPrice: 0, totalValue: 0 }]);
+            const delAsset = (id) => setAssets(p => p.filter(a => a.id !== id));
+
+            const addInstallment = () => {
+                if (!newInst.name || !newInst.totalAmount) return;
+                const monthly = Number(newInst.totalAmount) / Number(newInst.installmentCount);
+                setInstallments([...installments, { ...newInst, id: Date.now(), monthlyAmount: monthly }]);
+                setNewInst({ name: "", totalAmount: "", installmentCount: 3, startMonthIndex: 0 });
+            };
+            const delInstallment = (id) => setInstallments(p => p.filter(i => i.id !== id));
+            const chartData = useMemo(() => MONTHS.map((m, i) => {
+                const s = getSummary(i);
+                return { name: m, Gelir: s.inc, Gider: s.totExp, Tasarruf: s.sav };
+            }), [monthlyData, installments]);
+
+            const getCategoryOptions = () => {
+                const currentData = monthlyData[selectedMonthIndex];
+                let options = [];
+                options.push({ label: "--- Gelirler ---", disabled: true });
+                currentData.income.forEach(i => options.push({ value: `income|${i.id}`, label: i.name }));
+
+                options.push({ label: "--- Temel Giderler ---", disabled: true });
+                currentData.basicNeeds.forEach(i => options.push({ value: `basicNeeds|${i.id}`, label: i.name }));
+                options.push({ label: "--- Keyfi Harcamalar ---", disabled: true });
+                currentData.discretionary.forEach(i => options.push({ value: `discretionary|${i.id}`, label: i.name }));
+                options.push({ label: "--- Tasarruflar ---", disabled: true });
+                currentData.savings.forEach(i => options.push({ value: `savings|${i.id}`, label: i.name }));
+                return options;
+            };
+
+            return (
+                <div className="flex flex-col md:flex-row min-h-screen bg-white max-w-7xl mx-auto shadow-2xl border-x relative">
+
+                    {/* HIZLI EKLE MODAL */}
+                    {showQuickAdd && (
+                        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 fade-in">
+                            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+                                <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
+                                    <h3 className="font-bold flex items-center gap-2"><Icons.Lightning /> Harcama/Gelir Ekle</h3>
+                                    <button onClick={() => setShowQuickAdd(false)} className="hover:bg-white/20 p-1 rounded"><Icons.Close /></button>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tarih</label><input type="date" className="w-full border rounded-lg p-2" value={quickDate} onChange={(e) => setQuickDate(e.target.value)} /></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Kategori</label><select className="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-medium" value={quickCategory} onChange={(e) => setQuickCategory(e.target.value)}><option value="">Seçiniz...</option>{getCategoryOptions().map((opt, idx) => <option key={idx} value={opt.value} disabled={opt.disabled}>{opt.label}</option>)}</select></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Not</label><input className="w-full border rounded-lg p-2 text-sm" placeholder="Örn: Migros" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} /></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tutar</label><div className="relative"><input type="number" className="w-full border-2 border-slate-200 rounded-xl p-3 pl-3 text-lg font-bold" placeholder="0" value={quickAmount} onChange={(e) => setQuickAmount(e.target.value)} /><span className="absolute right-4 top-3.5 text-slate-400 font-bold">₺</span></div></div>
+                                    <button onClick={handleQuickAdd} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">Kaydet</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SIDEBAR */}
+                    <div className="hidden md:flex w-64 bg-slate-900 text-white flex-col fixed h-full z-10">
+                        <div className="p-6 text-xl font-bold text-indigo-400 flex gap-2 items-center"><Icons.Wallet /> Bütçem Pro</div>
+                        <nav className="flex-1 px-4 space-y-2">
+                            {['dashboard', 'budget', 'history', 'assets', 'installments'].map(tab => (
+                                <button key={tab} onClick={() => setActiveTab(tab)} className={`w-full flex gap-3 px-4 py-3 rounded-xl transition ${activeTab === tab ? 'bg-indigo-600' : 'text-slate-400 hover:text-white'}`}>
+                                    {tab === 'dashboard' && <><Icons.Dashboard /> Genel Bakış</>}
+                                    {tab === 'budget' && <><Icons.Calendar /> Bütçe Planı</>}
+                                    {tab === 'history' && <><Icons.History /> Geçmiş</>}
+                                    {tab === 'assets' && <><Icons.Coins /> Varlıklar</>}
+                                    {tab === 'installments' && <><Icons.CreditCard /> Taksitler</>}
+                                </button>
+                            ))}
+                        </nav>
+                        <div className="px-4 pb-2"><button onClick={() => setShowQuickAdd(true)} className="w-full bg-emerald-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-900/20 transition"><Icons.Lightning /> Hızlı Ekle</button></div>
+                        <div className="p-4"><button onClick={downloadExcel} className="w-full bg-slate-800 py-3 rounded-xl flex justify-center gap-2 hover:bg-slate-700 text-sm"><Icons.Download /> Yedek İndir</button></div>
+                    </div>
+
+                    {/* MOBILE NAV */}
+                    <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around p-2 z-50 shadow-lg pb-safe">
+                        {['dashboard', 'budget', 'history', 'assets', 'installments'].map(tab => (
+                            <button key={tab} onClick={() => setActiveTab(tab)} className={`p-2 rounded flex flex-col items-center ${activeTab === tab ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                {tab === 'dashboard' && <Icons.Dashboard />}
+                                {tab === 'budget' && <Icons.Calendar />}
+                                {tab === 'history' && <Icons.History />}
+                                {tab === 'assets' && <Icons.Coins />}
+                                {tab === 'installments' && <Icons.CreditCard />}
+                                <span className="text-[10px] mt-1 capitalize">{tab === 'history' ? 'Geçmiş' : tab}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <button onClick={() => setShowQuickAdd(true)} className="md:hidden fixed bottom-20 right-4 bg-emerald-500 text-white p-4 rounded-full shadow-2xl shadow-emerald-500/40 z-40 border-4 border-white"><Icons.Lightning /></button>
+
+                    {/* CONTENT */}
+                    <div className="flex-1 md:ml-64 p-4 md:p-8 pb-32 md:pb-8 overflow-y-auto">
+
+                        {activeTab === 'dashboard' && (
+                            <div className="space-y-6 fade-in">
+                                <h2 className="text-2xl font-bold text-slate-800">Genel Durum</h2>
+                                {(() => {
+                                    const s = getSummary(selectedMonthIndex);
+                                    return (
+                                        <>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                                    <Tooltip text="Toplam maaş, ek ders ve diğer gelirler.">
+                                                        <p className="text-xs font-bold text-emerald-800 flex items-center gap-1">TOPLAM GELİR <Icons.Info /></p>
+                                                    </Tooltip>
+                                                    <p className="text-xl font-bold text-emerald-700 mt-1">{formatMoney(s.inc)}</p>
+                                                </div>
+                                                <div className="bg-rose-50 p-4 rounded-xl border border-rose-100">
+                                                    <Tooltip text="Faturalar + Market + Eğlence + O ayki Taksitler (Her şey dahil).">
+                                                        <p className="text-xs font-bold text-rose-800 flex items-center gap-1">TOPLAM GİDER <Icons.Info /></p>
+                                                    </Tooltip>
+                                                    <p className="text-xl font-bold text-rose-700 mt-1">{formatMoney(s.totExp)}</p>
+                                                    <p className="text-[10px] text-rose-500">{formatMoney(s.pending)} Ödenecek</p>
+                                                </div>
+                                                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                                                    <Tooltip text="O ay kenara ayırdığın birikimler (BES, Altın vb.)">
+                                                        <p className="text-xs font-bold text-indigo-800 flex items-center gap-1">TASARRUF <Icons.Info /></p>
+                                                    </Tooltip>
+                                                    <p className="text-xl font-bold text-indigo-700 mt-1">{formatMoney(s.sav)}</p>
+                                                </div>
+                                                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                                    <Tooltip text="Varlıklar sayfasındaki Altın ve Dövizlerin toplam TL değeri.">
+                                                        <p className="text-xs font-bold text-amber-800 flex items-center gap-1">TOPLAM SERVET <Icons.Info /></p>
+                                                    </Tooltip>
+                                                    <p className="text-xl font-bold text-amber-700 mt-1">{formatMoney(totalAssetVal)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="bg-slate-50 rounded-xl p-4 h-64 border border-slate-200">
+                                                <h3 className="text-sm font-bold text-slate-500 mb-2">Yıllık Bütçe Trendi</h3>
+                                                <SimpleChart data={chartData} />
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </div>
+                        )}
+
+                        {activeTab === 'budget' && (
+                            <div className="space-y-6 fade-in">
+                                <div className="flex justify-between items-center bg-white p-2 rounded-xl border shadow-sm sticky top-0 z-20">
+                                    <h2 className="text-lg md:text-xl font-bold pl-2">Bütçe Planı</h2>
+                                    <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-md pb-1 scrollbar-hide">
+                                        {MONTHS.map((m, i) => (
+                                            <button key={i} onClick={() => setSelectedMonthIndex(i)} className={`px-3 py-1 text-xs font-bold rounded-lg whitespace-nowrap transition ${selectedMonthIndex === i ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>{m}</button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {(() => {
+                                    const s = getSummary(selectedMonthIndex);
+                                    const insts = getMonthInst(selectedMonthIndex);
+
+                                    const Table = ({ title, items, type, color, showPaid, desc }) => (
+                                        <div className="bg-white border rounded-xl overflow-hidden mb-4 shadow-sm">
+                                            <div className={`p-3 ${color} text-white flex justify-between items-center`}>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-sm flex items-center gap-1">{title} <Icons.Info /></span>
+                                                    <span className="text-[10px] opacity-80 font-normal">{desc}</span>
+                                                </div>
+                                                <button onClick={() => addItem(type)} className="bg-white/20 p-1 rounded hover:bg-white/30"><Icons.Plus /></button>
+                                            </div>
+                                            <div className="p-2">
+                                                {items.map(i => (
+                                                    <div key={i.id} className={`flex items-center gap-2 mb-2 pb-2 border-b last:border-0 ${i.isPaid ? 'opacity-50' : ''}`}>
+                                                        {showPaid && <button onClick={() => togglePaid(type, i.id)} className={`text-slate-300 hover:text-green-500 ${i.isPaid ? 'text-green-500' : ''}`}>{i.isPaid ? <Icons.Check /> : <Icons.Circle />}</button>}
+                                                        <input value={i.name} onChange={(e) => updateItem(type, i.id, 'name', e.target.value)} className="flex-1 text-sm bg-transparent outline-none font-medium" />
+                                                        <input type="number" value={i.actual} onChange={(e) => updateItem(type, i.id, 'actual', e.target.value)} className="w-20 text-right text-sm border rounded px-1" />
+                                                        <button onClick={() => delItem(type, i.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash /></button>
+                                                    </div>
+                                                ))}
+                                                <div className="text-right text-xs font-bold text-slate-400">Toplam: {formatMoney(items.reduce((a, c) => a + (Number(c.actual) || 0), 0))}</div>
+                                            </div>
+                                        </div>
+                                    );
+
+                                    return (
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                            <div>
+                                                <Table title="GELİRLER" desc="Maaş, Ek Ders, Prim vb." items={monthlyData[selectedMonthIndex].income} type="income" color="bg-emerald-600" />
+                                                <Table title="TASARRUFLAR" desc="Kenara ayrılan birikimler" items={monthlyData[selectedMonthIndex].savings} type="savings" color="bg-indigo-600" />
+                                            </div>
+                                            <div>
+                                                <Table title="TEMEL GİDERLER" desc="Kira, Fatura, Market, Eminevim" items={monthlyData[selectedMonthIndex].basicNeeds} type="basicNeeds" color="bg-rose-600" showPaid={true} />
+                                            </div>
+                                            <div>
+                                                {insts.length > 0 && <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4">
+                                                    <div className="flex justify-between text-xs font-bold text-orange-800 mb-2">
+                                                        <span className="flex items-center gap-1">OTOMATİK TAKSİTLER <Icons.Info /></span>
+                                                        <span>{formatMoney(s.instTot)}</span>
+                                                    </div>
+                                                    {insts.map(inSt => <div key={inSt.id} className="flex justify-between text-xs text-orange-700 py-1 border-b border-orange-200 last:border-0"><span>{inSt.name}</span><span>{formatMoney(inSt.monthlyAmount)}</span></div>)}
+                                                </div>}
+                                                <Table title="KEYFİ HARCAMALAR" desc="Eğlence, Dışarıda Yemek, EFT" items={monthlyData[selectedMonthIndex].discretionary} type="discretionary" color="bg-orange-500" showPaid={true} />
+                                            </div>
+                                        </div>
+                                    )
+                                })()}
+                            </div>
+                        )}
+
+                        {activeTab === 'history' && (
+                            <div className="space-y-6 fade-in">
+                                <h2 className="text-xl font-bold">İşlem Geçmişi</h2>
+                                <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-slate-50 text-slate-500 text-xs uppercase">
+                                            <tr><th className="p-4">Tarih</th><th className="p-4">Kategori</th><th className="p-4">Açıklama</th><th className="p-4 text-right">Tutar</th><th className="p-4"></th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {transactions.length === 0 ? <tr><td colSpan="5" className="p-8 text-center text-slate-400">Henüz işlem yok.</td></tr> :
+                                                transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => (
+                                                    <tr key={tx.id} className="border-b last:border-0 hover:bg-slate-50">
+                                                        <td className="p-4 font-medium text-slate-600">{formatDate(tx.date)}</td>
+                                                        <td className="p-4"><span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">{tx.category}</span></td>
+                                                        <td className="p-4 text-slate-500">{tx.desc}</td>
+                                                        <td className="p-4 text-right font-bold text-slate-700">{formatMoney(tx.amount)}</td>
+                                                        <td className="p-4 text-center"><button onClick={() => delTransaction(tx.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash size={16} /></button></td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'assets' && (
+                            <div className="space-y-6 fade-in">
+                                <h2 className="text-xl font-bold">Varlık Portföyü</h2>
+                                <div className="bg-amber-500 text-white p-6 rounded-xl shadow-lg">
+                                    <div className="text-sm opacity-90">Toplam Birikim Değeri</div>
+                                    <div className="text-3xl font-bold">{formatMoney(totalAssetVal)}</div>
+                                </div>
+                                <div className="bg-white border rounded-xl overflow-hidden">
+                                    <div className="p-3 bg-slate-50 border-b flex justify-between items-center">
+                                        <span className="font-bold text-sm text-slate-600">Varlık Listesi</span>
+                                        <button onClick={addAsset} className="text-indigo-600 text-xs font-bold flex gap-1 items-center"><Icons.Plus /> EKLE</button>
+                                    </div>
+                                    <div className="bg-slate-50 text-xs text-slate-500 p-2 grid grid-cols-12 gap-2 uppercase font-bold border-b">
+                                        <div className="col-span-4">Varlık Adı</div>
+                                        <div className="col-span-2 text-center">Adet</div>
+                                        <div className="col-span-2 text-center">Birim Fiyat</div>
+                                        <div className="col-span-3 text-right">Toplam</div>
+                                        <div className="col-span-1"></div>
+                                    </div>
+                                    {assets.map(a => (
+                                        <div key={a.id} className="grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 hover:bg-slate-50">
+                                            <div className="col-span-4"><input value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className="w-full bg-transparent font-medium outline-none text-sm" /></div>
+                                            <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className="w-full text-center border rounded px-1 text-sm h-8" placeholder="0" /></div>
+                                            <div className="col-span-2"><input type="number" value={a.unitPrice} onChange={(e) => updateAsset(a.id, 'unitPrice', e.target.value)} className="w-full text-center border rounded px-1 text-sm h-8" placeholder="0" /></div>
+                                            <div className="col-span-3 text-right font-bold text-sm text-slate-700">{formatMoney(a.totalValue)}</div>
+                                            <div className="col-span-1 text-center"><button onClick={() => delAsset(a.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash /></button></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'installments' && (
+                            <div className="space-y-6 fade-in">
+                                <h2 className="text-xl font-bold">Taksit Yöneticisi</h2>
+                                <div className="bg-white border rounded-xl p-4 shadow-sm">
+                                    <div className="text-sm font-bold text-indigo-600 mb-3 flex gap-2 items-center"><Icons.CreditCard /> Yeni Plan Ekle</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                                        <input placeholder="Ürün Adı" className="border rounded p-2 text-sm col-span-2" value={newInst.name} onChange={(e) => setNewInst({ ...newInst, name: e.target.value })} />
+                                        <input type="number" placeholder="Toplam Tutar" className="border rounded p-2 text-sm" value={newInst.totalAmount} onChange={(e) => setNewInst({ ...newInst, totalAmount: e.target.value })} />
+                                        <div className="flex gap-1">
+                                            <select className="border rounded p-2 text-sm flex-1" value={newInst.installmentCount} onChange={(e) => setNewInst({ ...newInst, installmentCount: e.target.value })}>{[2, 3, 4, 5, 6, 9, 10, 12, 24, 36].map(n => <option key={n} value={n}>{n} Taksit</option>)}</select>
+                                            <select className="border rounded p-2 text-sm flex-1" value={newInst.startMonthIndex} onChange={(e) => setNewInst({ ...newInst, startMonthIndex: e.target.value })}>{MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}</select>
+                                        </div>
+                                    </div>
+                                    <button onClick={addInstallment} className="w-full bg-indigo-600 text-white rounded p-2 text-sm font-bold hover:bg-indigo-700">EKLE</button>
+                                </div>
+                                <div className="space-y-2">
+                                    {installments.map(i => (
+                                        <div key={i.id} className="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm">
+                                            <div>
+                                                <div className="font-bold text-slate-800">{i.name}</div>
+                                                <div className="text-xs text-slate-500">{formatMoney(i.totalAmount)} / {i.installmentCount} Ay • Başlangıç: {MONTHS[i.startMonthIndex]}</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-bold text-rose-600">{formatMoney(i.monthlyAmount)}/ay</div>
+                                                <button onClick={() => delInstallment(i.id)} className="text-xs text-slate-300 hover:text-red-500 mt-1 flex items-center gap-1 justify-end"><Icons.Trash /> Sil</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {installments.length === 0 && <div className="text-center text-slate-400 text-sm py-4">Henüz taksit eklenmedi.</div>}
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 
 </html>
