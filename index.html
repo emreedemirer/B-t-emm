@@ -134,47 +134,95 @@
 
         // --- VERİ ŞABLONLARI ---
         const INITIAL_INCOME = [
-            { id: 'inc-1', name: "Maaş", planned: 0, actual: 0 },
-            { id: 'inc-2', name: "Ek Ders", planned: 0, actual: 0 },
-            { id: 'inc-3', name: "Özel Ders", planned: 0, actual: 0 },
-            { id: 'inc-4', name: "Temettü / Yatırım", planned: 0, actual: 0 },
-            { id: 'inc-5', name: "Halka Arz", planned: 0, actual: 0 },
-            { id: 'inc-6', name: "Diğer Gelirler", planned: 0, actual: 0 },
+            { id: 'inc-1', name: "Maaş (Kişisel)", planned: 0, actual: 0 },
+            { id: 'inc-2', name: "Eş Maaşı", planned: 0, actual: 0 },
+            { id: 'inc-3', name: "Ek Ders / Mesai", planned: 0, actual: 0 },
+            { id: 'inc-4', name: "Prim / İkramiye", planned: 0, actual: 0 },
+            { id: 'inc-5', name: "Kira Geliri", planned: 0, actual: 0 },
+            { id: 'inc-6', name: "Yatırım Fonu Geliri", planned: 0, actual: 0 },
+            { id: 'inc-7', name: "Temettü", planned: 0, actual: 0 },
+            { id: 'inc-8', name: "Halka Arz Geliri", planned: 0, actual: 0 },
+            { id: 'inc-9', name: "Döviz Alım/Satım", planned: 0, actual: 0 },
+            { id: 'inc-10', name: "Altın Bozum", planned: 0, actual: 0 },
+            { id: 'inc-11', name: "Freelance / Ek İş", planned: 0, actual: 0 },
+            { id: 'inc-12', name: "E-Ticaret / Satış", planned: 0, actual: 0 },
+            { id: 'inc-13', name: "Vergi İadesi", planned: 0, actual: 0 },
+            { id: 'inc-14', name: "Emeklilik Geliri", planned: 0, actual: 0 },
+            { id: 'inc-15', name: "Nafaka / Destek", planned: 0, actual: 0 },
+            { id: 'inc-16', name: "Diğer Gelirler", planned: 0, actual: 0 },
         ];
         const INITIAL_BASIC_NEEDS = [
-            { id: 'basic-emi', name: "Eminevim Taksidi", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-1', name: "Kira / Aidat", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-2', name: "Gıda / Market", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-3', name: "Elektrik", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-4', name: "Su", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-5', name: "Doğalgaz", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-6', name: "İnternet", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-7', name: "Telefon", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-8', name: "Yakıt / Ulaşım", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-9', name: "Eğitim", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-10', name: "Sağlık", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-11', name: "Berber / Kuaför", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-tax-1', name: "MTV Vergisi", planned: 0, actual: 0, isPaid: false },
-            { id: 'basic-tax-2', name: "Emlak Vergisi", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-emi', name: "Konut Kredisi / Kira", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-1', name: "Site Aidatı", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-2', name: "Mutfak / Market", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-3', name: "Elektrik Faturası", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-4', name: "Su Faturası", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-5', name: "Doğalgaz Faturası", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-6', name: "İnternet / TV", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-7', name: "Cep Telefonu", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-8', name: "Yakıt / Ulaşım / Akbil", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-9', name: "Okul Taksidi / Eğitim", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-10', name: "Okul Servisi", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-11', name: "Sağlık / İlaç", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-12', name: "Bakıcı / Yardımcı", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-13', name: "Kişisel Bakım (Zorunlu)", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-14', name: "Araç Sigorta / Bakım", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-tax-1', name: "Vergi Ödemeleri (MTV/Emlak)", planned: 0, actual: 0, isPaid: false },
+            { id: 'basic-other', name: "Diğer Zorunlu Giderler", planned: 0, actual: 0, isPaid: false },
         ];
         const INITIAL_DISCRETIONARY = [
-            { id: 'disc-eft', name: "EFT / Havale", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-1', name: "Dışarıda Yemek", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-2', name: "Giyim / Kozmetik", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-3', name: "Sosyal / Eğlence", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-4', name: "Abonelikler", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-5', name: "Bahçe / Hobi", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-6', name: "Çocuk / Oyuncak", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-7', name: "Kredi Kartı (Ekstra)", planned: 0, actual: 0, isPaid: false },
-            { id: 'disc-8', name: "Yardım", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-eft', name: "EFT / Havale Masrafı", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-1', name: "Dışarıda Yeme-İçme", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-2', name: "Kahve / Atıştırmalık", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-3', name: "Giyim / Aksesuar", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-4', name: "Kozmetik / Bakım (Keyfi)", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-5', name: "Tatil / Seyahat", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-6', name: "Spor / Üyelik", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-7', name: "Hobi / Kurs / Kitap", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-8', name: "Elektronik / Teknoloji", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-9', name: "Dijital Abonelikler", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-10', name: "Ev Dekorasyon", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-11', name: "Oyun / Eğlence", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-12', name: "Hediye / Bağış", planned: 0, actual: 0, isPaid: false },
+            { id: 'disc-13', name: "Şans Oyunları", planned: 0, actual: 0, isPaid: false },
         ];
         const INITIAL_SAVINGS = [
-            { id: 'sav-1', name: "BES", planned: 0, actual: 0 },
-            { id: 'sav-2', name: "Borsa (BIST)", planned: 0, actual: 0 },
-            { id: 'sav-3', name: "Altın / Döviz", planned: 0, actual: 0 },
-            { id: 'sav-4', name: "Kripto / Coin", planned: 0, actual: 0 },
-            { id: 'sav-5', name: "Fon", planned: 0, actual: 0 },
-            { id: 'sav-6', name: "TL Nakit", planned: 0, actual: 0 },
+            { id: 'sav-1', name: "Gram Altın", planned: 0, actual: 0 },
+            { id: 'sav-2', name: "Çeyrek / Tam Altın", planned: 0, actual: 0 },
+            { id: 'sav-3', name: "Dolar / Döviz", planned: 0, actual: 0 },
+            { id: 'sav-4', name: "Borsa (BIST)", planned: 0, actual: 0 },
+            { id: 'sav-5', name: "Yabancı Hisse", planned: 0, actual: 0 },
+            { id: 'sav-6', name: "Yatırım Fonları", planned: 0, actual: 0 },
+            { id: 'sav-7', name: "BES (Bireysel Emeklilik)", planned: 0, actual: 0 },
+            { id: 'sav-8', name: "Kripto Varlıklar", planned: 0, actual: 0 },
+            { id: 'sav-9', name: "Vadeli Mevduat", planned: 0, actual: 0 },
+            { id: 'sav-10', name: "Gümüş / Emtia", planned: 0, actual: 0 },
+            { id: 'sav-11', name: "Eurobond", planned: 0, actual: 0 },
+            { id: 'sav-12', name: "TL Nakit Birikim", planned: 0, actual: 0 },
+        ];
+
+        const INCOME_SUGGESTIONS = [
+            "Maaş", "Eş Maaşı", "Ek Ders", "Mesai", "Prim", "İkramiye", "Kira Geliri", "Fon Geliri",
+            "Temettü", "Halka Arz", "Döviz Satışı", "Altın Bozum", "Freelance", "E-Ticaret",
+            "Vergi İadesi", "Emeklilik Maaşı", "Nafaka", "Borç Tahsilatı", "Harçlık", "Diğer"
+        ];
+
+        const EXPENSE_SUGGESTIONS = [
+            "Kira", "Aidat", "Elektrik", "Su", "Doğalgaz", "İnternet", "Telefon", "Market", "Pazar",
+            "Benzin", "Mazot", "Otobüs/Metro", "Okul Taksidi", "Servis", "Kitap/Kırtasiye",
+            "İlaç", "Muayene", "Berber/Kuaför", "Kredi Kartı", "Kredi Ödemesi"
+        ];
+
+        const DISC_SUGGESTIONS = [
+            "Dışarıda Yemek", "Kahve", "Sinema/Tiyatro", "Konser", "Netflix/Spotify", "Oyun",
+            "Giyim", "Ayakkabı", "Aksesuar", "Kozmetik", "Tatil", "Uçak Bileti", "Otel",
+            "Hediye", "Bağış", "Hobi", "Elektronik", "Spor Salonu"
+        ];
+
+        const SAVINGS_SUGGESTIONS = [
+            "Gram Altın", "Çeyrek Altın", "Cumhuriyet Altını", "Dolar", "Euro", "Sterlin",
+            "BIST Hisse", "ABD Borsası", "Yatırım Fonu", "BES", "Kripto (BTC/ETH)",
+            "Vadeli Mevduat", "Gümüş", "Eurobond", "Nakit TL"
         ];
 
         const Tooltip = ({ text, children }) => (
@@ -183,6 +231,48 @@
                 <div className="tooltip-text">{text}</div>
             </div>
         );
+
+        const formatMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(v);
+        const formatDate = (d) => new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+
+        const Table = ({ title, items, type, color, showPaid, desc, onUpdate, onAdd, onDelete, onToggle, suggestions }) => {
+            const listId = `list-${type}`;
+            return (
+                <div className="bg-white border rounded-xl overflow-hidden mb-4 shadow-sm">
+                    {suggestions && (
+                        <datalist id={listId}>
+                            {suggestions.map(s => <option key={s} value={s} />)}
+                        </datalist>
+                    )}
+                    <div className={`p-3 ${color} text-white flex justify-between items-center`}>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-sm flex items-center gap-1">{title} <Icons.Info /></span>
+                            <span className="text-[10px] opacity-80 font-normal">{desc}</span>
+                        </div>
+                        <button onClick={() => onAdd(type)} className="bg-white/20 p-1 rounded hover:bg-white/30"><Icons.Plus /></button>
+                    </div>
+                    <div className="p-2">
+                        {items.map(i => (
+                            <div key={i.id} className={`flex items-center gap-2 mb-2 pb-2 border-b last:border-0 ${i.isPaid ? 'opacity-50' : ''}`}>
+                                {showPaid && <button onClick={() => onToggle(type, i.id)} className={`text-slate-300 hover:text-green-500 ${i.isPaid ? 'text-green-500' : ''}`}>{i.isPaid ? <Icons.Check /> : <Icons.Circle />}</button>}
+                                <input
+                                    value={i.name}
+                                    onChange={(e) => onUpdate(type, i.id, 'name', e.target.value)}
+                                    onFocus={(e) => { if (i.name === "Yeni Kalem") onUpdate(type, i.id, 'name', ""); }}
+                                    list={suggestions ? listId : undefined}
+                                    className="flex-1 text-sm bg-transparent outline-none font-medium"
+                                    placeholder="Kalem adını seçin veya yazın..."
+                                    autoComplete="off"
+                                />
+                                <input type="number" value={i.actual} onChange={(e) => onUpdate(type, i.id, 'actual', e.target.value)} className="w-20 text-right text-sm border rounded px-1" />
+                                <button onClick={() => onDelete(type, i.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash /></button>
+                            </div>
+                        ))}
+                        <div className="text-right text-xs font-bold text-slate-400">Toplam: {formatMoney(items.reduce((a, c) => a + (Number(c.actual) || 0), 0))}</div>
+                    </div>
+                </div>
+            );
+        };
 
         const App = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
@@ -252,15 +342,14 @@
                 return { inc, totExp, sav, bas, dis, instTot, pending };
             };
 
-            const formatMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(v);
-            const formatDate = (d) => new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+
 
             const totalAssetVal = assets.reduce((a, c) => a + (Number(c.totalValue) || 0), 0);
 
             // --- İŞLEMLER ---
             const updateItem = (type, id, f, v) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].map(i => i.id === id ? { ...i, [f]: f === 'name' ? v : Number(v) } : i) } }));
             const togglePaid = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].map(i => i.id === id ? { ...i, isPaid: !i.isPaid } : i) } }));
-            const addItem = (type) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: [...p[selectedMonthIndex][type], { id: Date.now(), name: "Yeni Kalem", actual: 0, isPaid: false }] } }));
+            const addItem = (type) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: [...p[selectedMonthIndex][type], { id: Date.now(), name: "", actual: 0, isPaid: false }] } }));
             const delItem = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].filter(i => i.id !== id) } }));
 
             // --- HIZLI EKLE ---
@@ -487,38 +576,14 @@
                                 {(() => {
                                     const s = getSummary(selectedMonthIndex);
                                     const insts = getMonthInst(selectedMonthIndex);
-
-                                    const Table = ({ title, items, type, color, showPaid, desc }) => (
-                                        <div className="bg-white border rounded-xl overflow-hidden mb-4 shadow-sm">
-                                            <div className={`p-3 ${color} text-white flex justify-between items-center`}>
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-sm flex items-center gap-1">{title} <Icons.Info /></span>
-                                                    <span className="text-[10px] opacity-80 font-normal">{desc}</span>
-                                                </div>
-                                                <button onClick={() => addItem(type)} className="bg-white/20 p-1 rounded hover:bg-white/30"><Icons.Plus /></button>
-                                            </div>
-                                            <div className="p-2">
-                                                {items.map(i => (
-                                                    <div key={i.id} className={`flex items-center gap-2 mb-2 pb-2 border-b last:border-0 ${i.isPaid ? 'opacity-50' : ''}`}>
-                                                        {showPaid && <button onClick={() => togglePaid(type, i.id)} className={`text-slate-300 hover:text-green-500 ${i.isPaid ? 'text-green-500' : ''}`}>{i.isPaid ? <Icons.Check /> : <Icons.Circle />}</button>}
-                                                        <input value={i.name} onChange={(e) => updateItem(type, i.id, 'name', e.target.value)} className="flex-1 text-sm bg-transparent outline-none font-medium" />
-                                                        <input type="number" value={i.actual} onChange={(e) => updateItem(type, i.id, 'actual', e.target.value)} className="w-20 text-right text-sm border rounded px-1" />
-                                                        <button onClick={() => delItem(type, i.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash /></button>
-                                                    </div>
-                                                ))}
-                                                <div className="text-right text-xs font-bold text-slate-400">Toplam: {formatMoney(items.reduce((a, c) => a + (Number(c.actual) || 0), 0))}</div>
-                                            </div>
-                                        </div>
-                                    );
-
                                     return (
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                             <div>
-                                                <Table title="GELİRLER" desc="Maaş, Ek Ders, Prim vb." items={monthlyData[selectedMonthIndex].income} type="income" color="bg-emerald-600" />
-                                                <Table title="TASARRUFLAR" desc="Kenara ayrılan birikimler" items={monthlyData[selectedMonthIndex].savings} type="savings" color="bg-indigo-600" />
+                                                <Table title="GELİRLER" desc="Maaş, Ek Ders, Prim vb." items={monthlyData[selectedMonthIndex].income} type="income" color="bg-emerald-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={INCOME_SUGGESTIONS} />
+                                                <Table title="TASARRUFLAR" desc="Kenara ayrılan birikimler" items={monthlyData[selectedMonthIndex].savings} type="savings" color="bg-indigo-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={SAVINGS_SUGGESTIONS} />
                                             </div>
                                             <div>
-                                                <Table title="TEMEL GİDERLER" desc="Kira, Fatura, Market, Eminevim" items={monthlyData[selectedMonthIndex].basicNeeds} type="basicNeeds" color="bg-rose-600" showPaid={true} />
+                                                <Table title="TEMEL GİDERLER" desc="Kira, Fatura, Market, Eminevim" items={monthlyData[selectedMonthIndex].basicNeeds} type="basicNeeds" color="bg-rose-600" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={EXPENSE_SUGGESTIONS} />
                                             </div>
                                             <div>
                                                 {insts.length > 0 && <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4">
@@ -528,7 +593,7 @@
                                                     </div>
                                                     {insts.map(inSt => <div key={inSt.id} className="flex justify-between text-xs text-orange-700 py-1 border-b border-orange-200 last:border-0"><span>{inSt.name}</span><span>{formatMoney(inSt.monthlyAmount)}</span></div>)}
                                                 </div>}
-                                                <Table title="KEYFİ HARCAMALAR" desc="Eğlence, Dışarıda Yemek, EFT" items={monthlyData[selectedMonthIndex].discretionary} type="discretionary" color="bg-orange-500" showPaid={true} />
+                                                <Table title="KEYFİ HARCAMALAR" desc="Eğlence, Dışarıda Yemek, EFT" items={monthlyData[selectedMonthIndex].discretionary} type="discretionary" color="bg-orange-500" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={DISC_SUGGESTIONS} />
                                             </div>
                                         </div>
                                     )

@@ -174,53 +174,52 @@ const Dashboard = ({ summary, assetsTotal }) => {
     );
 };
 
-const Budget = ({ monthIdx, setMonthIdx, data, updateItem, addItem, delItem, togglePaid, installments }) => {
-    const renderTable = (groupKey, title, colorInfo) => {
-        const items = data[groupKey] || [];
-        const total = items.reduce((a, b) => a + (Number(b.actual) || 0), 0);
+const BudgetTable = ({ groupKey, title, colorInfo, items, onAdd, onUpdate, onDelete, onToggle }) => {
+    const total = items.reduce((a, b) => a + (Number(b.actual) || 0), 0);
 
-        return (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
-                <div className={`p-4 border-b ${colorInfo.bg} flex justify-between items-center`}>
-                    <h3 className={`font-bold ${colorInfo.text}`}>{title}</h3>
-                    <button onClick={() => addItem(groupKey)} className={`p-1.5 rounded-lg bg-white/50 hover:bg-white text-slate-700 transition-colors shadow-sm`}><Icon name="plus" size={16} /></button>
-                </div>
-                <div className="p-2 flex-1 overflow-auto">
-                    {items.length === 0 && <div className="p-4 text-center text-slate-400 text-xs italic">Kalem eklenmedi.</div>}
-                    {items.map(item => (
-                        <div key={item.id} className="group flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                            {groupKey !== 'income' && groupKey !== 'savings' && (
-                                <button onClick={() => togglePaid(groupKey, item.id)} className={`transition-colors ${item.isPaid ? 'text-emerald-500' : 'text-slate-300 hover:text-slate-400'}`}>
-                                    {item.isPaid ? <Icon name="check" size={18} className="stroke-[3]" /> : <div className="w-[18px] h-[18px] border-2 rounded-full border-current"></div>}
-                                </button>
-                            )}
-                            <div className="flex-1 min-w-0">
-                                <input
-                                    value={item.name}
-                                    onChange={(e) => updateItem(groupKey, item.id, 'name', e.target.value)}
-                                    className={`w-full bg-transparent text-sm font-medium outline-none text-slate-700 ${item.isPaid ? 'opacity-50 line-through' : ''}`}
-                                />
-                            </div>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    value={item.actual}
-                                    onChange={(e) => updateItem(groupKey, item.id, 'actual', e.target.value)}
-                                    className="w-20 text-right text-sm font-semibold bg-slate-50 border border-slate-200 rounded px-2 py-1 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
-                                />
-                            </div>
-                            <button onClick={() => delItem(groupKey, item.id)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 transition-all"><Icon name="trash" size={14} /></button>
-                        </div>
-                    ))}
-                </div>
-                <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-bold text-slate-600">
-                    <span>TOPLAM</span>
-                    <span>{formatMoney(total)}</span>
-                </div>
+    return (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
+            <div className={`p-4 border-b ${colorInfo.bg} flex justify-between items-center`}>
+                <h3 className={`font-bold ${colorInfo.text}`}>{title}</h3>
+                <button onClick={() => onAdd(groupKey)} className={`p-1.5 rounded-lg bg-white/50 hover:bg-white text-slate-700 transition-colors shadow-sm`}><Icon name="plus" size={16} /></button>
             </div>
-        );
-    };
+            <div className="p-2 flex-1 overflow-auto">
+                {items.length === 0 && <div className="p-4 text-center text-slate-400 text-xs italic">Kalem eklenmedi.</div>}
+                {items.map(item => (
+                    <div key={item.id} className="group flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                        {groupKey !== 'income' && groupKey !== 'savings' && (
+                            <button onClick={() => onToggle(groupKey, item.id)} className={`transition-colors ${item.isPaid ? 'text-emerald-500' : 'text-slate-300 hover:text-slate-400'}`}>
+                                {item.isPaid ? <Icon name="check" size={18} className="stroke-[3]" /> : <div className="w-[18px] h-[18px] border-2 rounded-full border-current"></div>}
+                            </button>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <input
+                                value={item.name}
+                                onChange={(e) => onUpdate(groupKey, item.id, 'name', e.target.value)}
+                                className={`w-full bg-transparent text-sm font-medium outline-none text-slate-700 ${item.isPaid ? 'opacity-50 line-through' : ''}`}
+                            />
+                        </div>
+                        <div className="relative">
+                            <input
+                                type="number"
+                                value={item.actual}
+                                onChange={(e) => onUpdate(groupKey, item.id, 'actual', e.target.value)}
+                                className="w-20 text-right text-sm font-semibold bg-slate-50 border border-slate-200 rounded px-2 py-1 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                            />
+                        </div>
+                        <button onClick={() => onDelete(groupKey, item.id)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 transition-all"><Icon name="trash" size={14} /></button>
+                    </div>
+                ))}
+            </div>
+            <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-bold text-slate-600">
+                <span>TOPLAM</span>
+                <span>{formatMoney(total)}</span>
+            </div>
+        </div>
+    );
+};
 
+const Budget = ({ monthIdx, setMonthIdx, data, updateItem, addItem, delItem, togglePaid, installments }) => {
     const monthInsts = installments.filter(i => {
         const end = i.startMonthIndex + i.installmentCount - 1;
         return monthIdx >= i.startMonthIndex && monthIdx <= end;
@@ -237,12 +236,12 @@ const Budget = ({ monthIdx, setMonthIdx, data, updateItem, addItem, delItem, tog
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 overflow-y-auto pb-4">
                 <div className="space-y-6">
-                    {renderTable('income', 'Gelirler', { bg: 'bg-emerald-50', text: 'text-emerald-800' })}
-                    {renderTable('savings', 'Tasarruflar', { bg: 'bg-brand-50', text: 'text-brand-800' })}
+                    <BudgetTable groupKey="income" title="Gelirler" colorInfo={{ bg: 'bg-emerald-50', text: 'text-emerald-800' }} items={data.income} onAdd={addItem} onUpdate={updateItem} onDelete={delItem} onToggle={togglePaid} />
+                    <BudgetTable groupKey="savings" title="Tasarruflar" colorInfo={{ bg: 'bg-brand-50', text: 'text-brand-800' }} items={data.savings} onAdd={addItem} onUpdate={updateItem} onDelete={delItem} onToggle={togglePaid} />
                 </div>
 
                 <div className="h-full">
-                    {renderTable('basicNeeds', 'Temel Giderler', { bg: 'bg-rose-50', text: 'text-rose-800' })}
+                    <BudgetTable groupKey="basicNeeds" title="Temel Giderler" colorInfo={{ bg: 'bg-rose-50', text: 'text-rose-800' }} items={data.basicNeeds} onAdd={addItem} onUpdate={updateItem} onDelete={delItem} onToggle={togglePaid} />
                 </div>
 
                 <div className="space-y-6">
@@ -259,7 +258,7 @@ const Budget = ({ monthIdx, setMonthIdx, data, updateItem, addItem, delItem, tog
                             </div>
                         </div>
                     )}
-                    {renderTable('discretionary', 'Keyfi Harcamalar', { bg: 'bg-purple-50', text: 'text-purple-800' })}
+                    <BudgetTable groupKey="discretionary" title="Keyfi Harcamalar" colorInfo={{ bg: 'bg-purple-50', text: 'text-purple-800' }} items={data.discretionary} onAdd={addItem} onUpdate={updateItem} onDelete={delItem} onToggle={togglePaid} />
                 </div>
             </div>
         </div>
@@ -396,6 +395,51 @@ const History = ({ transactions, onDelete }) => (
 
 // --- MAIN APP ---
 
+const QuickAddModal = ({ onClose, onAdd, budgetData }) => {
+    const [qData, setQData] = useState({ date: new Date().toISOString().split('T')[0], amount: '', desc: '', catId: '' });
+    const currentM = new Date(qData.date).getMonth();
+    const opts = budgetData[currentM] || budgetData[0]; // Fallback if accessing future/invalid month
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl relative overflow-hidden animate-slide-up">
+                <div className="p-6 bg-dark-900 text-white flex justify-between items-center">
+                    <h3 className="font-bold text-lg flex items-center gap-2"><Icon name="plus" className="text-emerald-400" /> Hızlı İşlem</h3>
+                    <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-full"><Icon name="x" /></button>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">Tarih</label>
+                        <input type="date" value={qData.date} onChange={e => setQData({ ...qData, date: e.target.value })} className="w-full border-slate-200 border rounded-xl p-3 outline-none focus:border-brand-500" />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">Kategori</label>
+                        <select value={qData.catId} onChange={e => setQData({ ...qData, catId: e.target.value })} className="w-full border-slate-200 border rounded-xl p-3 outline-none focus:border-brand-500 bg-white">
+                            <option value="">Seçiniz</option>
+                            <optgroup label="Gelirler">
+                                {opts?.income?.map(i => <option key={i.id} value={`income|${i.id}`}>{i.name}</option>)}
+                            </optgroup>
+                            <optgroup label="Giderler">
+                                {opts?.basicNeeds?.map(i => <option key={i.id} value={`basicNeeds|${i.id}`}>{i.name}</option>)}
+                                {opts?.discretionary?.map(i => <option key={i.id} value={`discretionary|${i.id}`}>{i.name}</option>)}
+                            </optgroup>
+                            <optgroup label="Tasarruflar">
+                                {opts?.savings?.map(i => <option key={i.id} value={`savings|${i.id}`}>{i.name}</option>)}
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase">Tutar</label>
+                        <input type="number" placeholder="0.00" value={qData.amount} onChange={e => setQData({ ...qData, amount: e.target.value })} className="w-full border-slate-200 border rounded-xl p-3 text-lg font-bold outline-none focus:border-brand-500" />
+                    </div>
+                    <button onClick={() => onAdd(qData)} disabled={!qData.amount || !qData.catId} className="w-full bg-brand-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-brand-500/30">KAYDET</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function App() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [monthIdx, setMonthIdx] = useState(new Date().getMonth());
@@ -424,7 +468,7 @@ function App() {
             ...prev,
             [monthIdx]: {
                 ...prev[monthIdx],
-                [group]: prev[monthIdx][group].map(i => i.id === id ? { ...i, [field]: field === 'name' ? val : Number(val) } : i)
+                [group]: prev[monthIdx][group].map(i => i.id === id ? { ...i, [field]: field === 'name' ? val : val } : i)
             }
         }));
     };
@@ -506,10 +550,10 @@ function App() {
 
     const currentSummary = useMemo(() => {
         const d = budgetData[monthIdx];
-        const inc = d.income.reduce((a, c) => a + (c.actual || 0), 0);
-        const sav = d.savings.reduce((a, c) => a + (c.actual || 0), 0);
-        const basic = d.basicNeeds.reduce((a, c) => a + (c.actual || 0), 0);
-        const disc = d.discretionary.reduce((a, c) => a + (c.actual || 0), 0);
+        const inc = d.income.reduce((a, c) => a + (Number(c.actual) || 0), 0);
+        const sav = d.savings.reduce((a, c) => a + (Number(c.actual) || 0), 0);
+        const basic = d.basicNeeds.reduce((a, c) => a + (Number(c.actual) || 0), 0);
+        const disc = d.discretionary.reduce((a, c) => a + (Number(c.actual) || 0), 0);
 
         const monthInsts = installments.filter(i => {
             const end = i.startMonthIndex + i.installmentCount - 1;
@@ -517,58 +561,14 @@ function App() {
         });
         const instTot = monthInsts.reduce((a, b) => a + b.monthlyAmount, 0);
         const totExp = basic + disc + instTot;
-        const pending = totExp - d.basicNeeds.filter(i => i.isPaid).reduce((a, c) => a + (c.actual || 0), 0) - d.discretionary.filter(i => i.isPaid).reduce((a, c) => a + (c.actual || 0), 0) - instTot;
+        const pending = totExp - d.basicNeeds.filter(i => i.isPaid).reduce((a, c) => a + (Number(c.actual) || 0), 0) - d.discretionary.filter(i => i.isPaid).reduce((a, c) => a + (Number(c.actual) || 0), 0) - instTot;
 
         return { inc, totExp, sav, pending };
     }, [budgetData, monthIdx, installments]);
 
     const assetsTotal = assets.reduce((a, b) => a + b.total, 0);
 
-    // Quick Add Modal (Inline for Closure)
-    const QuickAddModal = () => {
-        const [qData, setQData] = useState({ date: new Date().toISOString().split('T')[0], amount: '', desc: '', catId: '' });
-        const currentM = new Date(qData.date).getMonth();
-        const opts = budgetData[currentM];
 
-        return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm" onClick={() => setShowQuickAdd(false)}></div>
-                <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl relative overflow-hidden animate-slide-up">
-                    <div className="p-6 bg-dark-900 text-white flex justify-between items-center">
-                        <h3 className="font-bold text-lg flex items-center gap-2"><Icon name="plus" className="text-emerald-400" /> Hızlı İşlem</h3>
-                        <button onClick={() => setShowQuickAdd(false)} className="hover:bg-white/10 p-2 rounded-full"><Icon name="x" /></button>
-                    </div>
-                    <div className="p-6 space-y-4">
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase">Tarih</label>
-                            <input type="date" value={qData.date} onChange={e => setQData({ ...qData, date: e.target.value })} className="w-full border-slate-200 border rounded-xl p-3 outline-none focus:border-brand-500" />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase">Kategori</label>
-                            <select value={qData.catId} onChange={e => setQData({ ...qData, catId: e.target.value })} className="w-full border-slate-200 border rounded-xl p-3 outline-none focus:border-brand-500 bg-white">
-                                <option value="">Seçiniz</option>
-                                <optgroup label="Gelirler">
-                                    {opts.income.map(i => <option key={i.id} value={`income|${i.id}`}>{i.name}</option>)}
-                                </optgroup>
-                                <optgroup label="Giderler">
-                                    {opts.basicNeeds.map(i => <option key={i.id} value={`basicNeeds|${i.id}`}>{i.name}</option>)}
-                                    {opts.discretionary.map(i => <option key={i.id} value={`discretionary|${i.id}`}>{i.name}</option>)}
-                                </optgroup>
-                                <optgroup label="Tasarruflar">
-                                    {opts.savings.map(i => <option key={i.id} value={`savings|${i.id}`}>{i.name}</option>)}
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase">Tutar</label>
-                            <input type="number" placeholder="0.00" value={qData.amount} onChange={e => setQData({ ...qData, amount: e.target.value })} className="w-full border-slate-200 border rounded-xl p-3 text-lg font-bold outline-none focus:border-brand-500" />
-                        </div>
-                        <button onClick={() => performQuickAdd(qData)} disabled={!qData.amount || !qData.catId} className="w-full bg-brand-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-brand-500/30">KAYDET</button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
 
     const downloadBackup = () => {
         const data = { budget: budgetData, assets, installments, transactions };
@@ -602,7 +602,7 @@ function App() {
             </main>
 
             <MobileNav activeTab={activeTab} onTabChange={setActiveTab} onQuickAdd={() => setShowQuickAdd(true)} />
-            {showQuickAdd && <QuickAddModal />}
+            {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onAdd={performQuickAdd} budgetData={budgetData} />}
 
             <div className="hidden md:block absolute bottom-4 right-4 z-30">
                 <button onClick={downloadBackup} className="bg-white border text-slate-500 hover:text-brand-600 p-2 rounded-lg shadow-sm text-xs font-bold flex items-center gap-2 transition-colors">
