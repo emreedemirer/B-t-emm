@@ -86,9 +86,22 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
     </style>
+    <!-- Mobile Drag Drop Polyfill -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
+    <script>
+        // Initialize polyfill specifically for touch devices
+        MobileDragDrop.polyfill({
+            dragImageCenterOnTouch: true,
+            holdToDrag: 200 // User must hold for 200ms to start dragging, allows scrolling otherwise
+        });
+
+        // Prevent default touch actions on draggable elements to ensure polyfill works smooth
+        document.addEventListener('touchmove', function () { }, { passive: false });
+    </script>
 </head>
 
-<body class="text-slate-900">
+<body class="text-slate-900 select-none">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -330,12 +343,8 @@
                                 onDragOver={(e) => e.preventDefault()}
                                 className={`flex items-center gap-2 pb-2 border-b last:border-0 last:pb-0 transition-transform ${darkMode ? 'border-slate-700' : 'border-slate-100'} ${i.isPaid ? 'opacity-50' : ''}`}
                             >
-                                <div className={`cursor-move p-1 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}><Icons.Drag /></div>
-                                {showPaid && (
-                                    <button onClick={() => onToggle(type, i.id)} className={`w-6 h-6 rounded-full flex items-center justify-center border transition ${i.isPaid ? 'bg-emerald-500 border-emerald-500 text-white' : (darkMode ? 'border-slate-600 text-slate-600 hover:border-emerald-500 hover:text-emerald-500' : 'border-slate-300 text-slate-300 hover:border-emerald-500 hover:text-emerald-500')}`}>
-                                        {i.isPaid && <Icons.Check />}
-                                    </button>
-                                )}
+                                <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}><Icons.Drag /></div>
+                                {i.isPaid && <Icons.Check className="text-emerald-500 ml-2" />}
                                 <input
                                     value={i.name}
                                     onChange={(e) => onUpdate(type, i.id, 'name', e.target.value)}
@@ -482,34 +491,7 @@
             const addItem = (type) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: [...p[selectedMonthIndex][type], { id: Date.now(), name: "", actual: 0, isPaid: false }] } }));
             const delItem = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].filter(i => i.id !== id) } }));
 
-            const reorderItem = (type, fromIndex, toIndex) => {
-                setMonthlyData(prev => {
-                    const monthData = prev[selectedMonthIndex];
-                    const list = [...monthData[type]];
-                    const itemToMove = list[fromIndex];
-                    list.splice(fromIndex, 1);
-                    list.splice(toIndex, 0, itemToMove);
-                    return { ...prev, [selectedMonthIndex]: { ...monthData, [type]: list } };
-                });
-            };
 
-            const dragAssetItem = useRef();
-            const dragOverAssetItem = useRef();
-
-            const reorderAsset = () => {
-                const fromIndex = dragAssetItem.current;
-                const toIndex = dragOverAssetItem.current;
-                if (dragAssetItem.current === null || dragOverAssetItem.current === null || fromIndex === toIndex) return;
-
-                const list = [...assets];
-                const itemToMove = list[fromIndex];
-                list.splice(fromIndex, 1);
-                list.splice(toIndex, 0, itemToMove);
-                setAssets(list);
-
-                dragAssetItem.current = null;
-                dragOverAssetItem.current = null;
-            };
 
             // --- HIZLI EKLE ---
             const handleQuickAdd = () => {
@@ -640,51 +622,93 @@
             }, [monthlyData]);
 
             useEffect(() => {
-                if (!trendCategory && yearlyAnalysis.maxCat) {
-                    setTrendCategory(yearlyAnalysis.maxCat);
+                if (notification) {
+                    const timer = setTimeout(() => setNotification(null), 4000);
+                    return () => clearTimeout(timer);
                 }
-            }, [yearlyAnalysis.maxCat]);
+            }, [notification]);
 
-            const getCategoryInsights = (catName) => {
-                if (!catName || !yearlyAnalysis.catMonthly[catName]) return null;
-                const data = yearlyAnalysis.catMonthly[catName];
-                const total = yearlyAnalysis.catTotals[catName];
-                const avg = total / 12;
+            // UNDO Logic
+            const [undoStack, setUndoStack] = useState([]);
 
-                const maxVal = Math.max(...data);
-                const maxIndex = data.indexOf(maxVal);
-                const maxMonth = MONTHS[maxIndex];
+            const handleUndo = () => {
+                const lastAction = undoStack[undoStack.length - 1];
+                if (!lastAction) return;
 
-                const firstHalf = data.slice(0, 6).reduce((a, b) => a + b, 0);
-                const secondHalf = data.slice(6, 12).reduce((a, b) => a + b, 0);
-
-
-                const trendText = secondHalf > firstHalf * 1.1
-                    ? "Yılın ikinci yarısında belirgin artış gözleniyor."
-                    : secondHalf < firstHalf * 0.9
-                        ? "Yılın ikinci yarısında harcamalar kontrol altına alındı."
-                        : "Yıl genelinde dengeli bir seyir izlendi.";
-
-                const currentMonthVal = data[selectedMonthIndex];
-                let diffRatio = 0;
-                let compareText = "Bu ay henüz harcama yok.";
-
-                if (avg > 0) {
-                    diffRatio = currentMonthVal / avg;
-                    const diffPerc = ((currentMonthVal - avg) / avg) * 100;
-
-                    if (currentMonthVal > 0) {
-                        if (diffRatio > 5) {
-                            compareText = `Dikkat! Bu ay, ortalamanın tam ${diffRatio.toFixed(1)} katı harcama yapıldı.`;
-                        } else {
-                            compareText = `Bu ay, yıllık ortalamanın ${Math.abs(diffPerc).toFixed(0)}% ${diffPerc > 0 ? 'üzerinde' : 'altında'}.`;
+                if (lastAction.type === 'reorder_budget') {
+                    setMonthlyData(prev => ({
+                        ...prev,
+                        [selectedMonthIndex]: {
+                            ...prev[selectedMonthIndex],
+                            [lastAction.listType]: lastAction.prevList
                         }
-                    }
+                    }));
+                } else if (lastAction.type === 'reorder_asset') {
+                    setAssets(lastAction.prevList);
                 }
 
-                return { maxMonth, avg, trendText, compareText, total, maxIndex };
+                setUndoStack(prev => prev.slice(0, -1));
+                setNotification({ message: 'İşlem geri alındı.', type: 'success' });
             };
 
+            const reorderItem = (type, fromIndex, toIndex) => {
+                setMonthlyData(prev => {
+                    const monthData = prev[selectedMonthIndex];
+                    const list = [...monthData[type]];
+
+                    // Save for Undo
+                    setUndoStack(stack => [...stack, { type: 'reorder_budget', listType: type, prevList: monthData[type] }]);
+                    setNotification({ message: 'Sıralama güncellendi.', type: 'info', canUndo: true });
+
+                    const itemToMove = list[fromIndex];
+                    list.splice(fromIndex, 1);
+                    list.splice(toIndex, 0, itemToMove);
+                    return { ...prev, [selectedMonthIndex]: { ...monthData, [type]: list } };
+                });
+            };
+
+            const dragAssetItem = useRef();
+            const dragOverAssetItem = useRef();
+
+            const reorderAsset = () => {
+                const fromIndex = dragAssetItem.current;
+                const toIndex = dragOverAssetItem.current;
+                if (dragAssetItem.current === null || dragOverAssetItem.current === null || fromIndex === toIndex) return;
+
+                // Save for Undo
+                setUndoStack(stack => [...stack, { type: 'reorder_asset', prevList: [...assets] }]);
+                setNotification({ message: 'Varlık sırası güncellendi.', type: 'info', canUndo: true });
+
+                const list = [...assets];
+                const itemToMove = list[fromIndex];
+                list.splice(fromIndex, 1);
+                list.splice(toIndex, 0, itemToMove);
+                setAssets(list);
+
+                dragAssetItem.current = null;
+                dragOverAssetItem.current = null;
+            };
+
+            // --- UI BİLEŞENLERİ: TOAST ---
+            // Notification with Undo button
+            const Toast = () => {
+                if (!notification) return null;
+                return (
+                    <div className={`fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-[100] animate-bounce-in ${notification.type === 'success' ? 'bg-emerald-500 text-white' : (notification.type === 'info' ? (darkMode ? 'bg-slate-700 text-white' : 'bg-slate-800 text-white') : 'bg-rose-500 text-white')}`}>
+                        <div className="flex items-center gap-2">
+                            {notification.type === 'success' ? <Icons.Check /> : <Icons.Info />}
+                            <span className="font-bold text-sm">{notification.message}</span>
+                        </div>
+                        {notification.canUndo && (
+                            <button onClick={handleUndo} className="ml-2 text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition font-bold uppercase tracking-wider">
+                                GERİ AL
+                            </button>
+                        )}
+                    </div>
+                );
+            };
+
+            // --- CATEGORY OPTIONS ---
             const getCategoryOptions = () => {
                 const currentData = monthlyData[selectedMonthIndex];
                 let options = [];
@@ -758,7 +782,13 @@
                                 {tab === 'history' && <Icons.History />}
                                 {tab === 'assets' && <Icons.Coins />}
                                 {tab === 'installments' && <Icons.CreditCard />}
-                                <span className="text-[10px] mt-1 capitalize">{tab === 'history' ? 'Geçmiş' : tab}</span>
+                                <span className="text-[10px] mt-1 font-medium">
+                                    {tab === 'dashboard' && 'Genel Bakış'}
+                                    {tab === 'budget' && 'Bütçe'}
+                                    {tab === 'history' && 'Geçmiş'}
+                                    {tab === 'assets' && 'Varlıklar'}
+                                    {tab === 'installments' && 'Taksitler'}
+                                </span>
                             </button>
                         ))}
                     </div>
@@ -1218,7 +1248,7 @@
                                                 className={`grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 transition ${darkMode ? 'border-slate-700 hover:bg-slate-700/50' : 'border-slate-50 hover:bg-slate-50'}`}
                                             >
                                                 <div className="col-span-4 flex items-center gap-1">
-                                                    <div className={`cursor-move p-1 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}><Icons.Drag /></div>
+                                                    <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}><Icons.Drag /></div>
                                                     <input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full bg-transparent font-medium outline-none text-sm transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-300'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} />
                                                 </div>
                                                 <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
