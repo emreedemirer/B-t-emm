@@ -92,7 +92,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
         // --- İKONLAR ---
         const Icons = {
@@ -110,7 +110,8 @@
             History: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l4 2" /></svg>,
             Close: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
             Info: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="16" y2="12" /><line x1="12" x2="12.01" y1="8" y2="8" /></svg>,
-            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
+            Drag: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="12" r="1" /><circle cx="9" cy="5" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="19" r="1" /></svg>
         };
 
         const SimpleChart = ({ data }) => {
@@ -262,9 +263,40 @@
 
 
 
-        const Table = ({ title, desc, items, type, color, showPaid, onUpdate, onAdd, onDelete, onToggle, suggestions, darkMode }) => {
+        const Table = ({ title, desc, items, type, color, showPaid, onUpdate, onAdd, onDelete, onToggle, onReorder, suggestions, darkMode }) => {
             const listId = `list-${type}`;
-            // Dynamic color adjustment for Dark Mode
+            const dragItem = useRef();
+            const dragOverItem = useRef();
+
+            const handleDragStart = (e, position) => {
+                dragItem.current = position;
+                e.dataTransfer.effectAllowed = 'move';
+                // Adjust opacity for visual feedback
+                e.target.style.opacity = '0.5';
+                e.target.style.transform = 'scale(1.02)';
+            };
+
+            const handleDragEnter = (e, position) => {
+                dragOverItem.current = position;
+                // e.target.style.borderTop = "2px solid #5850ec"; // Optional visual hint
+            };
+
+            const handleDragEnd = (e) => {
+                e.target.style.opacity = '1';
+                e.target.style.transform = 'scale(1)';
+
+                const fromIndex = dragItem.current;
+                const toIndex = dragOverItem.current;
+
+                if (dragItem.current !== null && dragOverItem.current !== null && fromIndex !== toIndex) {
+                    onReorder(type, fromIndex, toIndex);
+                }
+
+                dragItem.current = null;
+                dragOverItem.current = null;
+            };
+
+            // Dynamic color
             let headerColor = color;
             if (darkMode) {
                 if (color.includes('emerald')) headerColor = 'bg-emerald-900 border-emerald-800';
@@ -288,8 +320,17 @@
                         <button onClick={() => onAdd(type)} className="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition"><Icons.Plus /></button>
                     </div>
                     <div className="p-3 space-y-2">
-                        {items.map(i => (
-                            <div key={i.id} className={`flex items-center gap-2 pb-2 border-b last:border-0 last:pb-0 ${darkMode ? 'border-slate-700' : 'border-slate-100'} ${i.isPaid ? 'opacity-50' : ''}`}>
+                        {items.map((i, index) => (
+                            <div
+                                key={i.id}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, index)}
+                                onDragEnter={(e) => handleDragEnter(e, index)}
+                                onDragEnd={handleDragEnd}
+                                onDragOver={(e) => e.preventDefault()}
+                                className={`flex items-center gap-2 pb-2 border-b last:border-0 last:pb-0 transition-transform ${darkMode ? 'border-slate-700' : 'border-slate-100'} ${i.isPaid ? 'opacity-50' : ''}`}
+                            >
+                                <div className={`cursor-move p-1 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}><Icons.Drag /></div>
                                 {showPaid && (
                                     <button onClick={() => onToggle(type, i.id)} className={`w-6 h-6 rounded-full flex items-center justify-center border transition ${i.isPaid ? 'bg-emerald-500 border-emerald-500 text-white' : (darkMode ? 'border-slate-600 text-slate-600 hover:border-emerald-500 hover:text-emerald-500' : 'border-slate-300 text-slate-300 hover:border-emerald-500 hover:text-emerald-500')}`}>
                                         {i.isPaid && <Icons.Check />}
@@ -441,6 +482,35 @@
             const addItem = (type) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: [...p[selectedMonthIndex][type], { id: Date.now(), name: "", actual: 0, isPaid: false }] } }));
             const delItem = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].filter(i => i.id !== id) } }));
 
+            const reorderItem = (type, fromIndex, toIndex) => {
+                setMonthlyData(prev => {
+                    const monthData = prev[selectedMonthIndex];
+                    const list = [...monthData[type]];
+                    const itemToMove = list[fromIndex];
+                    list.splice(fromIndex, 1);
+                    list.splice(toIndex, 0, itemToMove);
+                    return { ...prev, [selectedMonthIndex]: { ...monthData, [type]: list } };
+                });
+            };
+
+            const dragAssetItem = useRef();
+            const dragOverAssetItem = useRef();
+
+            const reorderAsset = () => {
+                const fromIndex = dragAssetItem.current;
+                const toIndex = dragOverAssetItem.current;
+                if (dragAssetItem.current === null || dragOverAssetItem.current === null || fromIndex === toIndex) return;
+
+                const list = [...assets];
+                const itemToMove = list[fromIndex];
+                list.splice(fromIndex, 1);
+                list.splice(toIndex, 0, itemToMove);
+                setAssets(list);
+
+                dragAssetItem.current = null;
+                dragOverAssetItem.current = null;
+            };
+
             // --- HIZLI EKLE ---
             const handleQuickAdd = () => {
                 if (!quickAmount || !quickCategory) return;
@@ -522,6 +592,7 @@
 
             const addAsset = () => setAssets([...assets, { id: Date.now(), type: "", count: 0, unitPrice: 0, totalValue: 0 }]);
             const delAsset = (id) => setAssets(p => p.filter(a => a.id !== id));
+
 
             const addInstallment = () => {
                 if (!newInst.name || !newInst.totalAmount) return;
@@ -1032,11 +1103,11 @@
 
                                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                                 <div>
-                                                    <Table title="GELİRLER" desc="Maaş, Ek Ders, Prim vb." items={monthlyData[selectedMonthIndex].income} type="income" color="bg-emerald-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={INCOME_SUGGESTIONS} darkMode={darkMode} />
-                                                    <Table title="TASARRUFLAR" desc="Kenara ayrılan birikimler" items={monthlyData[selectedMonthIndex].savings} type="savings" color="bg-indigo-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={SAVINGS_SUGGESTIONS} darkMode={darkMode} />
+                                                    <Table title="GELİRLER" desc="Maaş, Ek Ders, Prim vb." items={monthlyData[selectedMonthIndex].income} type="income" color="bg-emerald-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} onReorder={reorderItem} suggestions={INCOME_SUGGESTIONS} darkMode={darkMode} />
+                                                    <Table title="TASARRUFLAR" desc="Kenara ayrılan birikimler" items={monthlyData[selectedMonthIndex].savings} type="savings" color="bg-indigo-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} onReorder={reorderItem} suggestions={SAVINGS_SUGGESTIONS} darkMode={darkMode} />
                                                 </div>
                                                 <div>
-                                                    <Table title="TEMEL GİDERLER" desc="Kira, Fatura, Market, Eminevim" items={monthlyData[selectedMonthIndex].basicNeeds} type="basicNeeds" color="bg-rose-600" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={EXPENSE_SUGGESTIONS} darkMode={darkMode} />
+                                                    <Table title="TEMEL GİDERLER" desc="Kira, Fatura, Market, Eminevim" items={monthlyData[selectedMonthIndex].basicNeeds} type="basicNeeds" color="bg-rose-600" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} onReorder={reorderItem} suggestions={EXPENSE_SUGGESTIONS} darkMode={darkMode} />
                                                 </div>
                                                 <div>
                                                     {insts.length > 0 && (
@@ -1067,7 +1138,7 @@
                                                             </button>
                                                         </div>
                                                     )}
-                                                    <Table title="KEYFİ HARCAMALAR" desc="Eğlence, Dışarıda Yemek, EFT" items={monthlyData[selectedMonthIndex].discretionary} type="discretionary" color="bg-orange-500" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={DISC_SUGGESTIONS} darkMode={darkMode} />
+                                                    <Table title="KEYFİ HARCAMALAR" desc="Eğlence, Dışarıda Yemek, EFT" items={monthlyData[selectedMonthIndex].discretionary} type="discretionary" color="bg-orange-500" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} onReorder={reorderItem} suggestions={DISC_SUGGESTIONS} darkMode={darkMode} />
                                                 </div>
                                             </div>
                                         </div>
@@ -1125,9 +1196,31 @@
                                         {ASSET_TYPES.map(t => <option key={t} value={t} />)}
                                     </datalist>
                                     <div className="max-h-[400px] overflow-y-auto">
-                                        {assets.map(a => (
-                                            <div key={a.id} className={`grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 transition ${darkMode ? 'border-slate-700 hover:bg-slate-700/50' : 'border-slate-50 hover:bg-slate-50'}`}>
-                                                <div className="col-span-4"><input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full bg-transparent font-medium outline-none text-sm transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-300'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} /></div>
+                                        {assets.map((a, index) => (
+                                            <div
+                                                key={a.id}
+                                                draggable
+                                                onDragStart={(e) => {
+                                                    dragAssetItem.current = index;
+                                                    e.dataTransfer.effectAllowed = 'move';
+                                                    e.target.style.opacity = '0.5';
+                                                    e.target.style.transform = 'scale(1.02)';
+                                                }}
+                                                onDragEnter={(e) => {
+                                                    dragOverAssetItem.current = index;
+                                                }}
+                                                onDragEnd={(e) => {
+                                                    e.target.style.opacity = '1';
+                                                    e.target.style.transform = 'scale(1)';
+                                                    reorderAsset();
+                                                }}
+                                                onDragOver={(e) => e.preventDefault()}
+                                                className={`grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 transition ${darkMode ? 'border-slate-700 hover:bg-slate-700/50' : 'border-slate-50 hover:bg-slate-50'}`}
+                                            >
+                                                <div className="col-span-4 flex items-center gap-1">
+                                                    <div className={`cursor-move p-1 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`}><Icons.Drag /></div>
+                                                    <input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full bg-transparent font-medium outline-none text-sm transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-300'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} />
+                                                </div>
                                                 <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
                                                 <div className="col-span-2"><input type="number" value={a.unitPrice} onChange={(e) => updateAsset(a.id, 'unitPrice', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
                                                 <div className={`col-span-3 text-right font-bold text-sm ${darkMode ? 'text-emerald-400' : 'text-slate-700'}`}>{formatMoney(a.totalValue)}</div>
