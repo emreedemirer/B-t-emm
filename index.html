@@ -343,7 +343,7 @@
                                 onDragOver={(e) => e.preventDefault()}
                                 className={`flex items-center gap-2 pb-2 border-b last:border-0 last:pb-0 transition-transform ${darkMode ? 'border-slate-700' : 'border-slate-100'} ${i.isPaid ? 'opacity-50' : ''}`}
                             >
-                                <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} style={{ touchAction: 'none' }}><Icons.Drag /></div>
+                                <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`} style={{ touchAction: 'none' }}><Icons.Drag /></div>
                                 {i.isPaid && <Icons.Check className="text-emerald-500 ml-2" />}
                                 <input
                                     value={i.name}
@@ -1244,7 +1244,7 @@
                                                 className={`grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 transition ${darkMode ? 'border-slate-700 hover:bg-slate-700/50' : 'border-slate-50 hover:bg-slate-50'}`}
                                             >
                                                 <div className="col-span-4 flex items-center gap-1">
-                                                    <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} style={{ touchAction: 'none' }}><Icons.Drag /></div>
+                                                    <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`} style={{ touchAction: 'none' }}><Icons.Drag /></div>
                                                     <input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full bg-transparent font-medium outline-none text-sm transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-300'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} />
                                                 </div>
                                                 <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
