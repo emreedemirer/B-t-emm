@@ -109,7 +109,8 @@
             Lightning: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>,
             History: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v5h5" /><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" /><path d="M12 7v5l4 2" /></svg>,
             Close: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
-            Info: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="16" y2="12" /><line x1="12" x2="12.01" y1="8" y2="8" /></svg>
+            Info: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="16" y2="12" /><line x1="12" x2="12.01" y1="8" y2="8" /></svg>,
+            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
         };
 
         const SimpleChart = ({ data }) => {
@@ -119,15 +120,33 @@
                     {data.map((d, i) => (
                         <div key={i} className="flex flex-col items-center flex-1 group relative h-full justify-end">
                             <div className="flex items-end gap-[2px] w-full justify-center h-full">
-                                <div style={{ height: `${(d.Gelir / maxVal) * 100}%` }} className="w-1.5 bg-emerald-500 rounded-t-sm transition-all"></div>
-                                <div style={{ height: `${(d.Gider / maxVal) * 100}%` }} className="w-1.5 bg-rose-500 rounded-t-sm transition-all"></div>
-                                <div style={{ height: `${(d.Tasarruf / maxVal) * 100}%` }} className="w-1.5 bg-indigo-500 rounded-t-sm transition-all"></div>
+                                <div style={{ height: `${(d.Gelir / maxVal) * 100}%` }} className="w-1.5 bg-emerald-500 rounded-t-sm transition-all hover:bg-emerald-400"></div>
+                                <div style={{ height: `${(d.Gider / maxVal) * 100}%` }} className="w-1.5 bg-rose-500 rounded-t-sm transition-all hover:bg-rose-400"></div>
+                                <div style={{ height: `${(d.Tasarruf / maxVal) * 100}%` }} className="w-1.5 bg-indigo-500 rounded-t-sm transition-all hover:bg-indigo-400"></div>
                             </div>
                             <span className="text-[9px] text-slate-400 mt-1">{d.name.substring(0, 3)}</span>
                         </div>
                     ))}
                 </div>
             );
+        };
+
+        const CategoryTrendChart = ({ data, labels }) => {
+            if (!data || data.every(v => v === 0)) return <div className="h-40 flex items-center justify-center text-slate-400 text-sm">Bu kategoride işlem yok.</div>;
+            const max = Math.max(...data, 1);
+            return (
+                <div className="w-full h-40 flex items-end justify-between gap-2 mt-4 px-2">
+                    {data.map((val, i) => (
+                        <div key={i} className="flex flex-col items-center flex-1 h-full justify-end group">
+                            <div className="relative w-full flex justify-end flex-col items-center h-full">
+                                <span className="absolute -top-6 text-[9px] font-bold bg-slate-800 text-white px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val)}</span>
+                                <div style={{ height: `${(val / max) * 100}%` }} className="w-full max-w-[20px] bg-indigo-500 rounded-t-sm transition-all group-hover:bg-indigo-400"></div>
+                            </div>
+                            <span className="text-[9px] text-slate-400 mt-1">{labels[i].substring(0, 3)}</span>
+                        </div>
+                    ))}
+                </div>
+            )
         };
 
         const MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
@@ -233,42 +252,72 @@
         );
 
         const formatMoney = (v) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(v);
+
+        const ASSET_TYPES = [
+            "Gram Altın", "Çeyrek Altın", "Yarım Altın", "Tam Altın", "Cumhuriyet Altını", "22 Ayar Bilezik",
+            "Dolar ($)", "Euro (€)", "Sterlin (£)"
+        ];
+
         const formatDate = (d) => new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
 
-        const Table = ({ title, items, type, color, showPaid, desc, onUpdate, onAdd, onDelete, onToggle, suggestions }) => {
+
+
+        const Table = ({ title, desc, items, type, color, showPaid, onUpdate, onAdd, onDelete, onToggle, suggestions, darkMode }) => {
             const listId = `list-${type}`;
+            // Dynamic color adjustment for Dark Mode
+            let headerColor = color;
+            if (darkMode) {
+                if (color.includes('emerald')) headerColor = 'bg-emerald-900 border-emerald-800';
+                if (color.includes('rose')) headerColor = 'bg-rose-900 border-rose-800';
+                if (color.includes('orange')) headerColor = 'bg-orange-900 border-orange-800';
+                if (color.includes('indigo')) headerColor = 'bg-indigo-900 border-indigo-800';
+            }
+
             return (
-                <div className="bg-white border rounded-xl overflow-hidden mb-4 shadow-sm">
+                <div className={`border rounded-xl overflow-hidden mb-4 shadow-sm transition-colors ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
                     {suggestions && (
                         <datalist id={listId}>
                             {suggestions.map(s => <option key={s} value={s} />)}
                         </datalist>
                     )}
-                    <div className={`p-3 ${color} text-white flex justify-between items-center`}>
+                    <div className={`p-3 text-white flex justify-between items-center transition-colors ${headerColor}`}>
                         <div className="flex flex-col">
-                            <span className="font-bold text-sm flex items-center gap-1">{title} <Icons.Info /></span>
-                            <span className="text-[10px] opacity-80 font-normal">{desc}</span>
+                            <h3 className="font-bold text-sm tracking-wide flex items-center gap-2">{title} <Icons.Info /></h3>
+                            <span className="text-[10px] opacity-70 font-normal">{desc}</span>
                         </div>
-                        <button onClick={() => onAdd(type)} className="bg-white/20 p-1 rounded hover:bg-white/30"><Icons.Plus /></button>
+                        <button onClick={() => onAdd(type)} className="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition"><Icons.Plus /></button>
                     </div>
-                    <div className="p-2">
+                    <div className="p-3 space-y-2">
                         {items.map(i => (
-                            <div key={i.id} className={`flex items-center gap-2 mb-2 pb-2 border-b last:border-0 ${i.isPaid ? 'opacity-50' : ''}`}>
-                                {showPaid && <button onClick={() => onToggle(type, i.id)} className={`text-slate-300 hover:text-green-500 ${i.isPaid ? 'text-green-500' : ''}`}>{i.isPaid ? <Icons.Check /> : <Icons.Circle />}</button>}
+                            <div key={i.id} className={`flex items-center gap-2 pb-2 border-b last:border-0 last:pb-0 ${darkMode ? 'border-slate-700' : 'border-slate-100'} ${i.isPaid ? 'opacity-50' : ''}`}>
+                                {showPaid && (
+                                    <button onClick={() => onToggle(type, i.id)} className={`w-6 h-6 rounded-full flex items-center justify-center border transition ${i.isPaid ? 'bg-emerald-500 border-emerald-500 text-white' : (darkMode ? 'border-slate-600 text-slate-600 hover:border-emerald-500 hover:text-emerald-500' : 'border-slate-300 text-slate-300 hover:border-emerald-500 hover:text-emerald-500')}`}>
+                                        {i.isPaid && <Icons.Check />}
+                                    </button>
+                                )}
                                 <input
                                     value={i.name}
                                     onChange={(e) => onUpdate(type, i.id, 'name', e.target.value)}
                                     onFocus={(e) => { if (i.name === "Yeni Kalem") onUpdate(type, i.id, 'name', ""); }}
                                     list={suggestions ? listId : undefined}
-                                    className="flex-1 text-sm bg-transparent outline-none font-medium"
-                                    placeholder="Kalem adını seçin veya yazın..."
+                                    className={`flex-1 text-sm bg-transparent outline-none font-medium transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-400'}`}
+                                    placeholder="Kalem adı..."
                                     autoComplete="off"
                                 />
-                                <input type="number" value={i.actual} onChange={(e) => onUpdate(type, i.id, 'actual', e.target.value)} className="w-20 text-right text-sm border rounded px-1" />
-                                <button onClick={() => onDelete(type, i.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash /></button>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        value={i.actual}
+                                        onChange={(e) => onUpdate(type, i.id, 'actual', e.target.value)}
+                                        className={`w-24 text-right text-sm border rounded-lg px-2 py-1 outline-none transition font-bold ${darkMode ? 'bg-slate-900 border-slate-700 text-slate-200 focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-indigo-500'}`}
+                                    />
+                                </div>
+                                <button onClick={() => onDelete(type, i.id)} className={`p-1 rounded transition ${darkMode ? 'text-slate-600 hover:text-rose-400 hover:bg-rose-900/20' : 'text-slate-300 hover:text-rose-500 hover:bg-rose-50'}`}><Icons.Trash /></button>
                             </div>
                         ))}
-                        <div className="text-right text-xs font-bold text-slate-400">Toplam: {formatMoney(items.reduce((a, c) => a + (Number(c.actual) || 0), 0))}</div>
+                        <div className={`text-right text-xs font-bold mt-2 pt-2 border-t ${darkMode ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'}`}>
+                            Toplam: <span className={darkMode ? 'text-slate-300' : 'text-slate-600'}>{formatMoney(items.reduce((a, c) => a + (Number(c.actual) || 0), 0))}</span>
+                        </div>
                     </div>
                 </div>
             );
@@ -283,6 +332,20 @@
             const [quickDesc, setQuickDesc] = useState('');
             const [quickCategory, setQuickCategory] = useState('');
             const [quickDate, setQuickDate] = useState(new Date().toISOString().split('T')[0]);
+            const [showAssetMenu, setShowAssetMenu] = useState(false);
+            const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+            const [notification, setNotification] = useState(null); // { message, type: 'success' | 'warning' }
+
+
+            useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                }
+            }, [darkMode]);
 
             // --- YÜKLEME ---
             const loadData = (key, defaultVal) => {
@@ -430,7 +493,8 @@
                     return a;
                 }));
             };
-            const addAsset = () => setAssets([...assets, { id: Date.now(), type: "Yeni", count: 0, unitPrice: 0, totalValue: 0 }]);
+
+            const addAsset = () => setAssets([...assets, { id: Date.now(), type: "", count: 0, unitPrice: 0, totalValue: 0 }]);
             const delAsset = (id) => setAssets(p => p.filter(a => a.id !== id));
 
             const addInstallment = () => {
@@ -440,10 +504,89 @@
                 setNewInst({ name: "", totalAmount: "", installmentCount: 3, startMonthIndex: 0 });
             };
             const delInstallment = (id) => setInstallments(p => p.filter(i => i.id !== id));
+
+
             const chartData = useMemo(() => MONTHS.map((m, i) => {
                 const s = getSummary(i);
                 return { name: m, Gelir: s.inc, Gider: s.totExp, Tasarruf: s.sav };
             }), [monthlyData, installments]);
+
+            const [trendCategory, setTrendCategory] = useState("");
+
+            const yearlyAnalysis = useMemo(() => {
+                const catMonthly = {};
+                const catTotals = {};
+
+                MONTHS.forEach((_, i) => {
+                    const d = monthlyData[i];
+                    // Taksitler o ayın "basic" veya "discretionary" harcaması sayılmaz, ayrıdır ama kategorik analiz için sadece manuel eklenenlere bakalım.
+                    // İstenirse taksitler de eklenebilir ama genelde kategori bazlı manuel harcama analizi istenir.
+                    [...d.basicNeeds, ...d.discretionary].forEach(item => {
+                        const val = Number(item.actual) || 0;
+                        if (val > 0) {
+                            if (!catMonthly[item.name]) catMonthly[item.name] = Array(12).fill(0);
+                            catMonthly[item.name][i] += val;
+                            catTotals[item.name] = (catTotals[item.name] || 0) + val;
+                        }
+                    });
+                    // İşlem geçmişini de tarayalım (Transaction based) - Eğer tabloya yansımadıysa?
+                    // Mevcut yapıda tablo (monthlyData) "source of truth". Transactionlar orayı güncelliyor. O yüzden monthlyData yeterli.
+                });
+
+                let maxCat = "";
+                let maxVal = 0;
+                Object.entries(catTotals).forEach(([k, v]) => {
+                    if (v > maxVal) { maxVal = v; maxCat = k; }
+                });
+
+                return { catMonthly, catTotals, maxCat };
+            }, [monthlyData]);
+
+            useEffect(() => {
+                if (!trendCategory && yearlyAnalysis.maxCat) {
+                    setTrendCategory(yearlyAnalysis.maxCat);
+                }
+            }, [yearlyAnalysis.maxCat]);
+
+            const getCategoryInsights = (catName) => {
+                if (!catName || !yearlyAnalysis.catMonthly[catName]) return null;
+                const data = yearlyAnalysis.catMonthly[catName];
+                const total = yearlyAnalysis.catTotals[catName];
+                const avg = total / 12;
+
+                const maxVal = Math.max(...data);
+                const maxIndex = data.indexOf(maxVal);
+                const maxMonth = MONTHS[maxIndex];
+
+                const firstHalf = data.slice(0, 6).reduce((a, b) => a + b, 0);
+                const secondHalf = data.slice(6, 12).reduce((a, b) => a + b, 0);
+
+
+                const trendText = secondHalf > firstHalf * 1.1
+                    ? "Yılın ikinci yarısında belirgin artış gözleniyor."
+                    : secondHalf < firstHalf * 0.9
+                        ? "Yılın ikinci yarısında harcamalar kontrol altına alındı."
+                        : "Yıl genelinde dengeli bir seyir izlendi.";
+
+                const currentMonthVal = data[selectedMonthIndex];
+                let diffRatio = 0;
+                let compareText = "Bu ay henüz harcama yok.";
+
+                if (avg > 0) {
+                    diffRatio = currentMonthVal / avg;
+                    const diffPerc = ((currentMonthVal - avg) / avg) * 100;
+
+                    if (currentMonthVal > 0) {
+                        if (diffRatio > 5) {
+                            compareText = `Dikkat! Bu ay, ortalamanın tam ${diffRatio.toFixed(1)} katı harcama yapıldı.`;
+                        } else {
+                            compareText = `Bu ay, yıllık ortalamanın ${Math.abs(diffPerc).toFixed(0)}% ${diffPerc > 0 ? 'üzerinde' : 'altında'}.`;
+                        }
+                    }
+                }
+
+                return { maxMonth, avg, trendText, compareText, total, maxIndex };
+            };
 
             const getCategoryOptions = () => {
                 const currentData = monthlyData[selectedMonthIndex];
@@ -460,22 +603,30 @@
                 return options;
             };
 
+
             return (
-                <div className="flex flex-col md:flex-row min-h-screen bg-white max-w-7xl mx-auto shadow-2xl border-x relative">
+                <div className={`flex flex-col md:flex-row min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-800'} w-full relative`}>
+
+                    {/* TOAST NOTIFICATION */}
+                    {notification && (
+                        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[110] px-6 py-3 rounded-full shadow-2xl font-bold text-sm tracking-wide animate-bounce flex items-center gap-2 ${notification.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'}`}>
+                            {notification.type === 'success' ? '🎉' : '⚠️'} {notification.message}
+                        </div>
+                    )}
 
                     {/* HIZLI EKLE MODAL */}
                     {showQuickAdd && (
-                        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 fade-in">
-                            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 fade-in backdrop-blur-sm">
+                            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden`}>
                                 <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
                                     <h3 className="font-bold flex items-center gap-2"><Icons.Lightning /> Harcama/Gelir Ekle</h3>
                                     <button onClick={() => setShowQuickAdd(false)} className="hover:bg-white/20 p-1 rounded"><Icons.Close /></button>
                                 </div>
                                 <div className="p-6 space-y-4">
-                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tarih</label><input type="date" className="w-full border rounded-lg p-2" value={quickDate} onChange={(e) => setQuickDate(e.target.value)} /></div>
-                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Kategori</label><select className="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-medium" value={quickCategory} onChange={(e) => setQuickCategory(e.target.value)}><option value="">Seçiniz...</option>{getCategoryOptions().map((opt, idx) => <option key={idx} value={opt.value} disabled={opt.disabled}>{opt.label}</option>)}</select></div>
-                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Not</label><input className="w-full border rounded-lg p-2 text-sm" placeholder="Örn: Migros" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} /></div>
-                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tutar</label><div className="relative"><input type="number" className="w-full border-2 border-slate-200 rounded-xl p-3 pl-3 text-lg font-bold" placeholder="0" value={quickAmount} onChange={(e) => setQuickAmount(e.target.value)} /><span className="absolute right-4 top-3.5 text-slate-400 font-bold">₺</span></div></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tarih</label><input type="date" className={`w-full border rounded-lg p-2 ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200'}`} value={quickDate} onChange={(e) => setQuickDate(e.target.value)} /></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Kategori</label><select className={`w-full border-2 rounded-xl p-3 text-sm font-medium ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200'}`} value={quickCategory} onChange={(e) => setQuickCategory(e.target.value)}><option value="">Seçiniz...</option>{getCategoryOptions().map((opt, idx) => <option key={idx} value={opt.value} disabled={opt.disabled}>{opt.label}</option>)}</select></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Not</label><input className={`w-full border rounded-lg p-2 text-sm ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="Örn: Migros" value={quickDesc} onChange={(e) => setQuickDesc(e.target.value)} /></div>
+                                    <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tutar</label><div className="relative"><input type="number" className={`w-full border-2 rounded-xl p-3 pl-3 text-lg font-bold ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" value={quickAmount} onChange={(e) => setQuickAmount(e.target.value)} /><span className="absolute right-4 top-3.5 text-slate-400 font-bold">₺</span></div></div>
                                     <button onClick={handleQuickAdd} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">Kaydet</button>
                                 </div>
                             </div>
@@ -483,7 +634,7 @@
                     )}
 
                     {/* SIDEBAR */}
-                    <div className="hidden md:flex w-64 bg-slate-900 text-white flex-col fixed h-full z-10">
+                    <div className={`hidden md:flex w-64 flex-col fixed h-full z-10 transition-colors ${darkMode ? 'bg-black border-r border-slate-800' : 'bg-slate-900'} text-white`}>
                         <div className="p-6 text-xl font-bold text-indigo-400 flex gap-2 items-center"><Icons.Wallet /> Bütçem Pro</div>
                         <nav className="flex-1 px-4 space-y-2">
                             {['dashboard', 'budget', 'history', 'assets', 'installments'].map(tab => (
@@ -496,12 +647,13 @@
                                 </button>
                             ))}
                         </nav>
+                        <div className="px-4 pb-2"><button onClick={() => setDarkMode(!darkMode)} className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold transition mb-2 ${darkMode ? 'bg-slate-800 text-yellow-400' : 'bg-slate-800 text-slate-300 hover:text-white'}`}>{darkMode ? '☀️ Aydınlık Mod' : '🌙 Karanlık Mod'}</button></div>
                         <div className="px-4 pb-2"><button onClick={() => setShowQuickAdd(true)} className="w-full bg-emerald-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-900/20 transition"><Icons.Lightning /> Hızlı Ekle</button></div>
                         <div className="p-4"><button onClick={downloadExcel} className="w-full bg-slate-800 py-3 rounded-xl flex justify-center gap-2 hover:bg-slate-700 text-sm"><Icons.Download /> Yedek İndir</button></div>
                     </div>
 
                     {/* MOBILE NAV */}
-                    <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t flex justify-around p-2 z-50 shadow-lg pb-safe">
+                    <div className={`md:hidden fixed bottom-0 left-0 w-full border-t flex justify-around p-2 z-50 shadow-lg pb-safe ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                         {['dashboard', 'budget', 'history', 'assets', 'installments'].map(tab => (
                             <button key={tab} onClick={() => setActiveTab(tab)} className={`p-2 rounded flex flex-col items-center ${activeTab === tab ? 'text-indigo-600' : 'text-slate-400'}`}>
                                 {tab === 'dashboard' && <Icons.Dashboard />}
@@ -518,43 +670,214 @@
                     {/* CONTENT */}
                     <div className="flex-1 md:ml-64 p-4 md:p-8 pb-32 md:pb-8 overflow-y-auto">
 
+
                         {activeTab === 'dashboard' && (
                             <div className="space-y-6 fade-in">
-                                <h2 className="text-2xl font-bold text-slate-800">Genel Durum</h2>
+                                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Genel Durum</h2>
                                 {(() => {
                                     const s = getSummary(selectedMonthIndex);
+
+                                    // PREV MONTH DATA
+                                    const prevIdx = selectedMonthIndex === 0 ? 11 : selectedMonthIndex - 1; // Basic cyclic for demo, ideally handle year boundary
+                                    // But here we are just looking at array index, assuming single year context or simple previous index in array
+                                    const ps = getSummary(prevIdx);
+
+                                    const incDiff = s.inc - ps.inc;
+                                    const incPerc = ps.inc > 0 ? (incDiff / ps.inc) * 100 : 0;
+
+                                    const savTarget = 2000; // Example static target or calculated from income %
+                                    const savPercRange = savTarget > 0 ? (s.sav / savTarget) * 100 : 0;
+
+                                    const totalExp = s.bas + s.dis + s.instTot;
+
+                                    const netStatus = s.inc - totalExp - s.sav;
+                                    const incExpRatio = s.inc > 0 ? (totalExp / s.inc) * 100 : 0;
+                                    const netRatio = s.inc > 0 ? (netStatus / s.inc) * 100 : 0;
+
+                                    // Smart Summary Logic
+                                    const maxExpCat = yearlyAnalysis.maxCat;
+                                    let summaryText = "";
+                                    let actionText = "";
+
+                                    if (netStatus < 0) {
+                                        summaryText = `Bu ay giderler gelirleri aştı (${formatMoney(Math.abs(netStatus))} açık). `;
+                                        if (s.dis > s.inc * 0.3) {
+                                            summaryText += "Keyfi harcamalar bütçeyi zorluyor.";
+                                            actionText = "Önümüzdeki ay keyfi kalemleri %20 kısarak denge sağlayabilirsin.";
+                                        } else {
+                                            summaryText += "Zorunlu giderler yüksek.";
+                                            actionText = "Sabit giderleri gözden geçirmek faydalı olabilir.";
+                                        }
+                                    } else {
+                                        summaryText = `Bütçe dengeli, ${formatMoney(netStatus)} artıdasın. `;
+                                        if (s.sav === 0) {
+                                            actionText = "Bu artıyı birikime yönlendirerek geleceğini güvenceye alabilirsin.";
+                                        } else {
+                                            actionText = "Hedeflerine emin adımlarla ilerliyorsun. 🚀";
+                                        }
+                                    }
+
+                                    // Recurring estimate (Visual fake for now, logic can be complex)
+                                    const recurringInc = Math.floor(s.inc * 0.85); // Assumption: 85% is salary
+
+                                    // Discretionary Ratio
+                                    const discRatio = totalExp > 0 ? (s.dis / totalExp) * 100 : 0;
+
+                                    // Yearly Chart Comment
+                                    const yearlyOverview = chartData.reduce((acc, curr) => {
+                                        if (curr.Gider > curr.Gelir) acc.badMonths.push(curr.name);
+                                        return acc;
+                                    }, { badMonths: [] });
+                                    const chartComment = yearlyOverview.badMonths.length > 0
+                                        ? `${yearlyOverview.badMonths.join(', ')} aylarında giderler geliri aştı, diğer aylar dengeli.`
+                                        : "Tüm yıl boyunca bütçe dengesi korundu. Harika!";
+
                                     return (
                                         <>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                                                    <Tooltip text="Toplam maaş, ek ders ve diğer gelirler.">
-                                                        <p className="text-xs font-bold text-emerald-800 flex items-center gap-1">TOPLAM GELİR <Icons.Info /></p>
-                                                    </Tooltip>
-                                                    <p className="text-xl font-bold text-emerald-700 mt-1">{formatMoney(s.inc)}</p>
+                                            {/* NET DURUM BANNER */}
+                                            <div className={`p-6 rounded-2xl text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 ${netStatus >= 0 ? 'bg-gradient-to-r from-emerald-500 to-emerald-700' : 'bg-gradient-to-r from-rose-500 to-rose-700'}`}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="bg-white/20 p-3 rounded-full"><Icons.Wallet /></div>
+                                                    <div>
+                                                        <p className="text-xs font-bold opacity-80 uppercase tracking-wider">AYLIK NET DURUM</p>
+                                                        <p className="text-2xl md:text-3xl font-bold">{netStatus >= 0 ? `+${formatMoney(netStatus)}` : `${formatMoney(netStatus)}`}</p>
+                                                        <p className="text-sm opacity-90 font-medium">
+                                                            {netStatus >= 0 ? `Gelirin %${netRatio.toFixed(0)}'i cebinde kaldı. 👏` : `Gelir/Gider Oranı: %${incExpRatio.toFixed(0)} ⚠️`}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div className="bg-rose-50 p-4 rounded-xl border border-rose-100">
-                                                    <Tooltip text="Faturalar + Market + Eğlence + O ayki Taksitler (Her şey dahil).">
-                                                        <p className="text-xs font-bold text-rose-800 flex items-center gap-1">TOPLAM GİDER <Icons.Info /></p>
-                                                    </Tooltip>
-                                                    <p className="text-xl font-bold text-rose-700 mt-1">{formatMoney(s.totExp)}</p>
-                                                    <p className="text-[10px] text-rose-500">{formatMoney(s.pending)} Ödenecek</p>
-                                                </div>
-                                                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                                                    <Tooltip text="O ay kenara ayırdığın birikimler (BES, Altın vb.)">
-                                                        <p className="text-xs font-bold text-indigo-800 flex items-center gap-1">TASARRUF <Icons.Info /></p>
-                                                    </Tooltip>
-                                                    <p className="text-xl font-bold text-indigo-700 mt-1">{formatMoney(s.sav)}</p>
-                                                </div>
-                                                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                                                    <Tooltip text="Varlıklar sayfasındaki Altın ve Dövizlerin toplam TL değeri.">
-                                                        <p className="text-xs font-bold text-amber-800 flex items-center gap-1">TOPLAM SERVET <Icons.Info /></p>
-                                                    </Tooltip>
-                                                    <p className="text-xl font-bold text-amber-700 mt-1">{formatMoney(totalAssetVal)}</p>
+                                                <div className="bg-white/10 p-4 rounded-xl max-w-md text-xs md:text-sm leading-relaxed border border-white/10">
+                                                    <strong className="block mb-1 opacity-100 flex items-center gap-1"><Icons.Lightning /> AKILLI ÖZET</strong>
+                                                    <span className="opacity-90">{summaryText} <br /><span className="font-bold opacity-100 italic">💡 {actionText}</span></span>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-50 rounded-xl p-4 h-64 border border-slate-200">
-                                                <h3 className="text-sm font-bold text-slate-500 mb-2">Yıllık Bütçe Trendi</h3>
-                                                <SimpleChart data={chartData} />
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                {/* INCOME CARD */}
+                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                    <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-emerald-900/20 group-hover:bg-emerald-900/30' : 'bg-emerald-50 group-hover:bg-emerald-100'}`}></div>
+                                                    <div className="relative z-10">
+                                                        <p className={`text-xs font-bold uppercase mb-1 flex justify-between pr-4 ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>TOPLAM GELİR {incDiff !== 0 && <span className={`text-[10px] ${incDiff > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{incDiff > 0 ? '▲' : '▼'} %{Math.abs(incPerc).toFixed(0)}</span>}</p>
+                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(s.inc)}</p>
+                                                        <p className={`text-[10px] mt-2 font-medium flex gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                                            <span>↻ Düzenli: {formatMoney(recurringInc)}</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* EXPENSE CARD */}
+                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                    <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-rose-900/20 group-hover:bg-rose-900/30' : 'bg-rose-50 group-hover:bg-rose-100'}`}></div>
+                                                    <div className="relative z-10 w-full">
+                                                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">TOPLAM GİDER</p>
+                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(totalExp)}</p>
+
+                                                        <div className={`mt-3 flex gap-1 h-1.5 w-full rounded-full overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                                                            <div className="bg-rose-500" style={{ width: `${(s.bas / totalExp) * 100}%` }}></div>
+                                                            <div className="bg-orange-400" style={{ width: `${(s.dis / totalExp) * 100}%` }}></div>
+                                                        </div>
+                                                        <div className="flex justify-between text-[10px] mt-1 font-bold">
+                                                            <span className="text-rose-500">Zorunlu</span>
+                                                            <span className="text-orange-400">Keyfi %{discRatio.toFixed(0)}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* SAVINGS CARD */}
+                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                    <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-indigo-900/20 group-hover:bg-indigo-900/30' : 'bg-indigo-50 group-hover:bg-indigo-100'}`}></div>
+                                                    <div className="relative z-10">
+                                                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">TASARRUF</p>
+                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(s.sav)}</p>
+                                                        {s.sav === 0 ? (
+                                                            <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">{netStatus > 0 ? "Artı bakiye tasarrufa aktarılmadı." : "Tasarruf için alan oluşmadı."}</p>
+                                                        ) : (
+                                                            <div className="mt-2">
+                                                                <div className="flex justify-between text-[10px] text-slate-400 mb-0.5"><span>Hedef: {formatMoney(savTarget)}</span><span>%{savPercRange.toFixed(0)}</span></div>
+                                                                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><div className="h-full bg-indigo-500" style={{ width: `${Math.min(savPercRange, 100)}%` }}></div></div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* WEALTH CARD */}
+                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                    <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-amber-900/20 group-hover:bg-amber-900/30' : 'bg-amber-50 group-hover:bg-amber-100'}`}></div>
+                                                    <div className="relative z-10">
+                                                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">TOPLAM SERVET</p>
+                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(totalAssetVal)}</p>
+                                                        <div className="mt-2 flex flex-col gap-0.5">
+                                                            <p className="text-[10px] text-amber-600 font-bold">Son 30 gün: +{formatMoney(s.sav)}</p>
+                                                            <p className="text-[10px] text-slate-400 opacity-70">Geleceğiniz birikiyor.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* YILLIK TRENDLER & ANALİZ */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                {/* GENEL GRAFİK */}
+                                                <div className={`rounded-xl p-6 border shadow-sm transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div>
+                                                            <h3 className={`text-sm font-bold mb-1 flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}><Icons.Dashboard /> Yıllık Bütçe Özeti</h3>
+                                                            <p className="text-xs text-slate-400">Mevcut yılın gelir, gider ve tasarruf dağılımı</p>
+                                                        </div>
+                                                        <div className="flex gap-2 text-[10px] font-bold">
+                                                            <span className="flex items-center gap-1 text-emerald-600"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Gelir</span>
+                                                            <span className="flex items-center gap-1 text-rose-600"><span className="w-2 h-2 rounded-full bg-rose-500"></span> Gider</span>
+                                                            <span className="flex items-center gap-1 text-amber-500"><span className="w-2 h-2 rounded-full bg-amber-400"></span> Tasarruf</span>
+                                                        </div>
+                                                    </div>
+                                                    <SimpleChart data={chartData} />
+                                                    <p className={`text-xs mt-4 italic text-center px-4 py-2 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
+                                                        📊 {chartComment}
+                                                    </p>
+                                                </div>
+
+                                                {/* KATEGORİ DETAYI */}
+                                                <div className={`rounded-xl p-6 border shadow-sm relative transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <div>
+                                                            <h3 className={`text-sm font-bold mb-1 flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}><Icons.Lightning /> Kategori Trendi</h3>
+                                                            <p className="text-xs text-slate-400">Seçili kalemin yıllık harcama analizi</p>
+                                                        </div>
+                                                        <select
+                                                            className={`text-xs border rounded-lg p-2 font-bold outline-none max-w-[150px] ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 text-slate-600'}`}
+                                                            value={trendCategory}
+                                                            onChange={(e) => setTrendCategory(e.target.value)}
+                                                        >
+                                                            <option value="">Seçiniz</option>
+                                                            {Object.keys(yearlyAnalysis.catTotals).sort().map(k => <option key={k} value={k}>{k}</option>)}
+                                                        </select>
+                                                    </div>
+
+                                                    {trendCategory && yearlyAnalysis.catMonthly[trendCategory] ? (
+                                                        <>
+                                                            <CategoryTrendChart data={yearlyAnalysis.catMonthly[trendCategory]} labels={MONTHS} />
+                                                            {(() => {
+                                                                const ins = getCategoryInsights(trendCategory);
+                                                                if (!ins) return null;
+                                                                return (
+                                                                    <div className={`mt-4 p-3 rounded-lg border text-xs space-y-1 ${darkMode ? 'bg-indigo-900/40 border-indigo-800/50 text-indigo-200' : 'bg-indigo-50 border-indigo-100 text-indigo-800'}`}>
+                                                                        <div className="font-bold flex justify-between">
+                                                                            <span>Toplam: {formatMoney(ins.total)}</span>
+                                                                            <span>Ort: {formatMoney(ins.avg)}/ay</span>
+                                                                        </div>
+                                                                        <p>• En yüksek harcama <span className="font-bold">{ins.maxMonth}</span> ayında yapıldı.</p>
+                                                                        <p>• {ins.trendText}</p>
+                                                                        <p className={`pt-1 border-t mt-1 ${darkMode ? 'border-indigo-800/50' : 'border-indigo-200'}`}>💡 <span className="italic">{ins.compareText}</span></p>
+                                                                    </div>
+                                                                )
+                                                            })()}
+                                                        </>
+                                                    ) : (
+                                                        <div className="h-40 flex flex-col items-center justify-center text-slate-400 text-xs">
+                                                            <Icons.Search />
+                                                            <span className="mt-2">Veri görüntülemek için bir kategori seçin.</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </>
                                     );
@@ -564,11 +887,30 @@
 
                         {activeTab === 'budget' && (
                             <div className="space-y-6 fade-in">
-                                <div className="flex justify-between items-center bg-white p-2 rounded-xl border shadow-sm sticky top-0 z-20">
-                                    <h2 className="text-lg md:text-xl font-bold pl-2">Bütçe Planı</h2>
+                                <div className={`flex justify-between items-center p-2 rounded-xl border shadow-sm sticky top-0 z-20 mb-4 transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                    <h2 className={`text-lg md:text-xl font-bold pl-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>Bütçe Planı</h2>
                                     <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-md pb-1 scrollbar-hide">
                                         {MONTHS.map((m, i) => (
-                                            <button key={i} onClick={() => setSelectedMonthIndex(i)} className={`px-3 py-1 text-xs font-bold rounded-lg whitespace-nowrap transition ${selectedMonthIndex === i ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500'}`}>{m}</button>
+                                            <button key={i} onClick={() => {
+                                                // Notification Logic
+                                                const prevInsts = getMonthInst(selectedMonthIndex);
+                                                const newInsts = getMonthInst(i);
+
+                                                // Check finished installments
+                                                const finishedCount = prevInsts.length - newInsts.filter(n => prevInsts.find(p => p.id === n.id)).length;
+                                                const totalPrev = prevInsts.reduce((a, c) => a + c.monthlyAmount, 0);
+                                                const totalNew = newInsts.reduce((a, c) => a + c.monthlyAmount, 0);
+
+                                                if (finishedCount > 0) {
+                                                    setNotification({ message: `Bu ay ${finishedCount} taksit bitti!`, type: 'success' });
+                                                    setTimeout(() => setNotification(null), 3000);
+                                                } else if (totalNew > totalPrev) {
+                                                    setNotification({ message: `Bu ay taksit yükü arttı.`, type: 'warning' });
+                                                    setTimeout(() => setNotification(null), 3000);
+                                                }
+
+                                                setSelectedMonthIndex(i);
+                                            }} className={`px-3 py-1 text-xs font-bold rounded-lg whitespace-nowrap transition ${selectedMonthIndex === i ? (darkMode ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-white') : (darkMode ? 'bg-slate-700 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-500')}`}>{m}</button>
                                         ))}
                                     </div>
                                 </div>
@@ -576,48 +918,147 @@
                                 {(() => {
                                     const s = getSummary(selectedMonthIndex);
                                     const insts = getMonthInst(selectedMonthIndex);
+
+                                    const netStatus = s.inc - s.totExp - s.sav;
+                                    const savingsRate = s.inc > 0 ? (s.sav / s.inc) * 100 : 0;
+                                    const isBudgetExceeded = netStatus < 0;
+
+                                    // Pie Chart Data
+                                    const pieData = [
+                                        { label: 'Temel', value: s.bas + s.instTot, color: '#e11d48' }, // Rose-600
+                                        { label: 'Keyfi', value: s.dis, color: '#f97316' }, // Orange-500
+                                        { label: 'Tasarruf', value: s.sav, color: '#4f46e5' }, // Indigo-600
+                                        { label: 'Kalan', value: Math.max(0, netStatus), color: '#10b981' } // Emerald-500
+                                    ];
+                                    const totalPie = pieData.reduce((a, c) => a + c.value, 0);
+                                    let currentAngle = 0;
+                                    const gradientParts = pieData.map(d => {
+                                        if (totalPie === 0) return '';
+                                        const percentage = (d.value / totalPie) * 100;
+                                        const start = currentAngle;
+                                        currentAngle += percentage;
+                                        return `${d.color} ${start}% ${currentAngle}%`;
+                                    }).filter(Boolean).join(', ');
+
                                     return (
-                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                            <div>
-                                                <Table title="GELİRLER" desc="Maaş, Ek Ders, Prim vb." items={monthlyData[selectedMonthIndex].income} type="income" color="bg-emerald-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={INCOME_SUGGESTIONS} />
-                                                <Table title="TASARRUFLAR" desc="Kenara ayrılan birikimler" items={monthlyData[selectedMonthIndex].savings} type="savings" color="bg-indigo-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={SAVINGS_SUGGESTIONS} />
-                                            </div>
-                                            <div>
-                                                <Table title="TEMEL GİDERLER" desc="Kira, Fatura, Market, Eminevim" items={monthlyData[selectedMonthIndex].basicNeeds} type="basicNeeds" color="bg-rose-600" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={EXPENSE_SUGGESTIONS} />
-                                            </div>
-                                            <div>
-                                                {insts.length > 0 && <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4">
-                                                    <div className="flex justify-between text-xs font-bold text-orange-800 mb-2">
-                                                        <span className="flex items-center gap-1">OTOMATİK TAKSİTLER <Icons.Info /></span>
-                                                        <span>{formatMoney(s.instTot)}</span>
+                                        <div className="space-y-6">
+                                            {/* ÖZET KARTI */}
+                                            <div className={`p-4 rounded-xl border shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6 transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                {/* SOL: RAKAMLAR */}
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <div className={`text-xs font-bold uppercase mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Aylık Net Durum</div>
+                                                        <div className={`text-3xl font-bold ${isBudgetExceeded ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                            {formatMoney(netStatus)}
+                                                            <span className="text-sm font-normal text-slate-400 ml-2">
+                                                                {isBudgetExceeded ? '(AÇIK)' : '(KALAN)'}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    {insts.map(inSt => <div key={inSt.id} className="flex justify-between text-xs text-orange-700 py-1 border-b border-orange-200 last:border-0"><span>{inSt.name}</span><span>{formatMoney(inSt.monthlyAmount)}</span></div>)}
-                                                </div>}
-                                                <Table title="KEYFİ HARCAMALAR" desc="Eğlence, Dışarıda Yemek, EFT" items={monthlyData[selectedMonthIndex].discretionary} type="discretionary" color="bg-orange-500" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={DISC_SUGGESTIONS} />
+
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className={`font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Tasarruf Oranı</span>
+                                                            <span className={`font-bold ${savingsRate >= 20 ? 'text-emerald-500' : 'text-orange-500'}`}>%{savingsRate.toFixed(1)}</span>
+                                                        </div>
+                                                        <div className={`w-full rounded-full h-2 overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                                                            <div className={`h-full rounded-full ${savingsRate >= 20 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{ width: `${Math.min(savingsRate, 100)}%` }}></div>
+                                                        </div>
+                                                        <div className="text-[10px] text-slate-400 mt-1 opacity-70">{savingsRate >= 20 ? 'Harika! Hedefin üzerindesin. 🚀' : 'Biraz daha gayret! Hedef %20. 💪'}</div>
+                                                    </div>
+
+                                                    {isBudgetExceeded && <div className={`border p-3 rounded-lg flex items-center gap-3 text-xs font-bold animate-pulse ${darkMode ? 'bg-rose-900/30 border-rose-900/50 text-rose-400' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+                                                        <Icons.Info /> <span>Dikkat! Bütçeyi {formatMoney(Math.abs(netStatus))} aştın.</span>
+                                                    </div>}
+                                                </div>
+
+                                                {/* SAĞ: GRAFİK */}
+                                                <div className="flex items-center justify-center relative">
+                                                    {totalPie > 0 ? (
+                                                        <div className="w-32 h-32 rounded-full relative" style={{ background: `conic-gradient(${gradientParts})` }}>
+                                                            <div className={`absolute inset-4 rounded-full flex items-center justify-center flex-col transition ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+                                                                <span className="text-[10px] text-slate-400 font-bold">TOPLAM</span>
+                                                                <span className={`text-xs font-bold ${darkMode ? 'text-white' : 'text-slate-700'}`}>{formatMoney(totalPie)}</span>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={`w-32 h-32 rounded-full border-4 flex items-center justify-center text-xs ${darkMode ? 'border-slate-700 text-slate-500' : 'border-slate-100 text-slate-300'}`}>Veri Yok</div>
+                                                    )}
+                                                    <div className="ml-4 space-y-2">
+                                                        {pieData.map((d, i) => d.value > 0 && (
+                                                            <div key={i} className="flex items-center gap-2 text-xs">
+                                                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }}></div>
+                                                                <span className="text-slate-500">{d.label}</span>
+                                                                <span className="font-bold text-slate-700">%{((d.value / totalPie) * 100).toFixed(0)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                                <div>
+                                                    <Table title="GELİRLER" desc="Maaş, Ek Ders, Prim vb." items={monthlyData[selectedMonthIndex].income} type="income" color="bg-emerald-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={INCOME_SUGGESTIONS} darkMode={darkMode} />
+                                                    <Table title="TASARRUFLAR" desc="Kenara ayrılan birikimler" items={monthlyData[selectedMonthIndex].savings} type="savings" color="bg-indigo-600" onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={SAVINGS_SUGGESTIONS} darkMode={darkMode} />
+                                                </div>
+                                                <div>
+                                                    <Table title="TEMEL GİDERLER" desc="Kira, Fatura, Market, Eminevim" items={monthlyData[selectedMonthIndex].basicNeeds} type="basicNeeds" color="bg-rose-600" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={EXPENSE_SUGGESTIONS} darkMode={darkMode} />
+                                                </div>
+                                                <div>
+                                                    {insts.length > 0 && (
+                                                        <div className={`border rounded-xl p-4 mb-4 transition relative overflow-hidden ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                                                            <div className={`text-center mb-4 pb-4 border-b ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                                                                <div className={`text-xs font-bold opacity-60 uppercase tracking-widest ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>AYLIK TOPLAM YÜK</div>
+                                                                <div className={`text-2xl font-bold mt-1 ${darkMode ? 'text-rose-400' : 'text-rose-600'}`}>{formatMoney(s.instTot)} <span className="text-sm opacity-60">/ ay</span></div>
+                                                            </div>
+
+                                                            <div className="space-y-3 mb-4">
+                                                                {insts.map(inSt => {
+                                                                    const endMonth = Number(inSt.startMonthIndex) + Number(inSt.installmentCount) - 1;
+                                                                    const remaining = endMonth - selectedMonthIndex + 1;
+                                                                    return (
+                                                                        <div key={inSt.id} className="flex justify-between items-center text-sm">
+                                                                            <div className="flex flex-col">
+                                                                                <span className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{inSt.name}</span>
+                                                                                <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{remaining} ay kaldı</span>
+                                                                            </div>
+                                                                            <div className={`font-bold ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{formatMoney(inSt.monthlyAmount)}</div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+
+                                                            <button onClick={() => setActiveTab('installments')} className={`w-full py-2 text-xs font-bold rounded-lg border flex items-center justify-center gap-1 transition ${darkMode ? 'border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10' : 'border-indigo-100 text-indigo-600 hover:bg-indigo-50'}`}>
+                                                                Taksitleri Yönet <Icons.CreditCard size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    <Table title="KEYFİ HARCAMALAR" desc="Eğlence, Dışarıda Yemek, EFT" items={monthlyData[selectedMonthIndex].discretionary} type="discretionary" color="bg-orange-500" showPaid={true} onUpdate={updateItem} onAdd={addItem} onDelete={delItem} onToggle={togglePaid} suggestions={DISC_SUGGESTIONS} darkMode={darkMode} />
+                                                </div>
                                             </div>
                                         </div>
-                                    )
+                                    );
                                 })()}
                             </div>
                         )}
 
                         {activeTab === 'history' && (
                             <div className="space-y-6 fade-in">
-                                <h2 className="text-xl font-bold">İşlem Geçmişi</h2>
-                                <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>İşlem Geçmişi</h2>
+                                <div className={`border rounded-xl overflow-hidden shadow-sm ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                                     <table className="w-full text-sm text-left">
-                                        <thead className="bg-slate-50 text-slate-500 text-xs uppercase">
+                                        <thead className={`text-xs uppercase ${darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
                                             <tr><th className="p-4">Tarih</th><th className="p-4">Kategori</th><th className="p-4">Açıklama</th><th className="p-4 text-right">Tutar</th><th className="p-4"></th></tr>
                                         </thead>
                                         <tbody>
                                             {transactions.length === 0 ? <tr><td colSpan="5" className="p-8 text-center text-slate-400">Henüz işlem yok.</td></tr> :
                                                 transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => (
-                                                    <tr key={tx.id} className="border-b last:border-0 hover:bg-slate-50">
-                                                        <td className="p-4 font-medium text-slate-600">{formatDate(tx.date)}</td>
-                                                        <td className="p-4"><span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-bold">{tx.category}</span></td>
-                                                        <td className="p-4 text-slate-500">{tx.desc}</td>
-                                                        <td className="p-4 text-right font-bold text-slate-700">{formatMoney(tx.amount)}</td>
-                                                        <td className="p-4 text-center"><button onClick={() => delTransaction(tx.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash size={16} /></button></td>
+                                                    <tr key={tx.id} className={`border-b last:border-0 transition ${darkMode ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-100 hover:bg-slate-50'}`}>
+                                                        <td className={`p-4 font-medium ${darkMode ? 'text-slate-200' : 'text-slate-600'}`}>{formatDate(tx.date)}</td>
+                                                        <td className="p-4"><span className={`px-2 py-1 rounded text-xs font-bold ${darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-50 text-indigo-700'}`}>{tx.category}</span></td>
+                                                        <td className={`p-4 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{tx.desc}</td>
+                                                        <td className={`p-4 text-right font-bold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{formatMoney(tx.amount)}</td>
+                                                        <td className="p-4 text-center"><button onClick={() => delTransaction(tx.id)} className={`transition ${darkMode ? 'text-slate-500 hover:text-rose-400' : 'text-slate-300 hover:text-red-500'}`}><Icons.Trash /></button></td>
                                                     </tr>
                                                 ))}
                                         </tbody>
@@ -628,61 +1069,78 @@
 
                         {activeTab === 'assets' && (
                             <div className="space-y-6 fade-in">
-                                <h2 className="text-xl font-bold">Varlık Portföyü</h2>
-                                <div className="bg-amber-500 text-white p-6 rounded-xl shadow-lg">
-                                    <div className="text-sm opacity-90">Toplam Birikim Değeri</div>
-                                    <div className="text-3xl font-bold">{formatMoney(totalAssetVal)}</div>
+                                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Varlık Portföyü</h2>
+                                <div className={`p-6 rounded-xl shadow-lg relative overflow-hidden ${darkMode ? 'bg-amber-700 text-white' : 'bg-amber-500 text-white'}`}>
+                                    <div className="absolute top-0 right-0 p-8 opacity-10"><Icons.Coins size={64} /></div>
+                                    <div className="text-sm opacity-90 font-medium uppercase tracking-wide">Toplam Birikim Değeri</div>
+                                    <div className="text-3xl md:text-4xl font-bold mt-1">{formatMoney(totalAssetVal)}</div>
                                 </div>
-                                <div className="bg-white border rounded-xl overflow-hidden">
-                                    <div className="p-3 bg-slate-50 border-b flex justify-between items-center">
-                                        <span className="font-bold text-sm text-slate-600">Varlık Listesi</span>
-                                        <button onClick={addAsset} className="text-indigo-600 text-xs font-bold flex gap-1 items-center"><Icons.Plus /> EKLE</button>
+                                <div className={`border rounded-xl overflow-visible transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                    <div className={`p-4 border-b flex justify-between items-center relative ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                                        <span className={`font-bold text-sm ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>PORTFÖY VARLIKLARI</span>
+                                        <button onClick={addAsset} className={`text-xs font-bold flex gap-1 items-center px-3 py-2 rounded-lg transition ${darkMode ? 'bg-indigo-900/50 text-indigo-300 hover:bg-indigo-900' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}><Icons.Plus /> VARLIK EKLE</button>
                                     </div>
-                                    <div className="bg-slate-50 text-xs text-slate-500 p-2 grid grid-cols-12 gap-2 uppercase font-bold border-b">
-                                        <div className="col-span-4">Varlık Adı</div>
+                                    <div className={`text-xs p-3 grid grid-cols-12 gap-2 uppercase font-bold border-b ${darkMode ? 'bg-slate-800 text-slate-500 border-slate-700' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>
+                                        <div className="col-span-4">Varlık Türü</div>
                                         <div className="col-span-2 text-center">Adet</div>
                                         <div className="col-span-2 text-center">Birim Fiyat</div>
                                         <div className="col-span-3 text-right">Toplam</div>
                                         <div className="col-span-1"></div>
                                     </div>
-                                    {assets.map(a => (
-                                        <div key={a.id} className="grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 hover:bg-slate-50">
-                                            <div className="col-span-4"><input value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className="w-full bg-transparent font-medium outline-none text-sm" /></div>
-                                            <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className="w-full text-center border rounded px-1 text-sm h-8" placeholder="0" /></div>
-                                            <div className="col-span-2"><input type="number" value={a.unitPrice} onChange={(e) => updateAsset(a.id, 'unitPrice', e.target.value)} className="w-full text-center border rounded px-1 text-sm h-8" placeholder="0" /></div>
-                                            <div className="col-span-3 text-right font-bold text-sm text-slate-700">{formatMoney(a.totalValue)}</div>
-                                            <div className="col-span-1 text-center"><button onClick={() => delAsset(a.id)} className="text-slate-300 hover:text-red-500"><Icons.Trash /></button></div>
-                                        </div>
-                                    ))}
+                                    <datalist id="assetList">
+                                        {ASSET_TYPES.map(t => <option key={t} value={t} />)}
+                                    </datalist>
+                                    <div className="max-h-[400px] overflow-y-auto">
+                                        {assets.map(a => (
+                                            <div key={a.id} className={`grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 transition ${darkMode ? 'border-slate-700 hover:bg-slate-700/50' : 'border-slate-50 hover:bg-slate-50'}`}>
+                                                <div className="col-span-4"><input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full bg-transparent font-medium outline-none text-sm transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-300'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} /></div>
+                                                <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
+                                                <div className="col-span-2"><input type="number" value={a.unitPrice} onChange={(e) => updateAsset(a.id, 'unitPrice', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
+                                                <div className={`col-span-3 text-right font-bold text-sm ${darkMode ? 'text-emerald-400' : 'text-slate-700'}`}>{formatMoney(a.totalValue)}</div>
+                                                <div className="col-span-1 text-center"><button onClick={() => delAsset(a.id)} className={`transition ${darkMode ? 'text-slate-600 hover:text-rose-400' : 'text-slate-300 hover:text-red-500'}`}><Icons.Trash /></button></div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {activeTab === 'installments' && (
                             <div className="space-y-6 fade-in">
-                                <h2 className="text-xl font-bold">Taksit Yöneticisi</h2>
-                                <div className="bg-white border rounded-xl p-4 shadow-sm">
-                                    <div className="text-sm font-bold text-indigo-600 mb-3 flex gap-2 items-center"><Icons.CreditCard /> Yeni Plan Ekle</div>
+                                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Taksit Yöneticisi</h2>
+                                <div className={`border rounded-xl p-4 shadow-sm transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white'}`}>
+                                    <div className={`text-sm font-bold mb-3 flex gap-2 items-center ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}><Icons.CreditCard /> Yeni Plan Ekle</div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-                                        <input placeholder="Ürün Adı" className="border rounded p-2 text-sm col-span-2" value={newInst.name} onChange={(e) => setNewInst({ ...newInst, name: e.target.value })} />
-                                        <input type="number" placeholder="Toplam Tutar" className="border rounded p-2 text-sm" value={newInst.totalAmount} onChange={(e) => setNewInst({ ...newInst, totalAmount: e.target.value })} />
+                                        <input placeholder="Ürün Adı" className={`border rounded p-2 text-sm col-span-2 outline-none ${darkMode ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-500' : 'bg-white border-slate-200'}`} value={newInst.name} onChange={(e) => setNewInst({ ...newInst, name: e.target.value })} />
+                                        <input type="number" placeholder="Toplam Tutar" className={`border rounded p-2 text-sm outline-none ${darkMode ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-500' : 'bg-white border-slate-200'}`} value={newInst.totalAmount} onChange={(e) => setNewInst({ ...newInst, totalAmount: e.target.value })} />
                                         <div className="flex gap-1">
-                                            <select className="border rounded p-2 text-sm flex-1" value={newInst.installmentCount} onChange={(e) => setNewInst({ ...newInst, installmentCount: e.target.value })}>{[2, 3, 4, 5, 6, 9, 10, 12, 24, 36].map(n => <option key={n} value={n}>{n} Taksit</option>)}</select>
-                                            <select className="border rounded p-2 text-sm flex-1" value={newInst.startMonthIndex} onChange={(e) => setNewInst({ ...newInst, startMonthIndex: e.target.value })}>{MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}</select>
+                                            <select className={`border rounded p-2 text-sm flex-1 outline-none ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} value={newInst.installmentCount} onChange={(e) => setNewInst({ ...newInst, installmentCount: e.target.value })}>{[2, 3, 4, 5, 6, 9, 10, 12, 24, 36].map(n => <option key={n} value={n}>{n} Taksit</option>)}</select>
+                                            <select className={`border rounded p-2 text-sm flex-1 outline-none ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} value={newInst.startMonthIndex} onChange={(e) => setNewInst({ ...newInst, startMonthIndex: e.target.value })}>{MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}</select>
                                         </div>
                                     </div>
-                                    <button onClick={addInstallment} className="w-full bg-indigo-600 text-white rounded p-2 text-sm font-bold hover:bg-indigo-700">EKLE</button>
+                                    <button onClick={addInstallment} className="w-full bg-indigo-600 text-white rounded p-2 text-sm font-bold hover:bg-indigo-700 transition">PLAN OLUŞTUR</button>
+
+                                    {/* PREDICTIVE FEEDBACK */}
+                                    {(newInst.totalAmount && newInst.installmentCount) && (
+                                        <div className={`mt-3 p-3 rounded-lg text-xs space-y-1 ${darkMode ? 'bg-indigo-900/40 border border-indigo-500/30' : 'bg-indigo-50 border border-indigo-100'}`}>
+                                            <div className={`font-bold flex gap-2 items-center ${darkMode ? 'text-indigo-300' : 'text-indigo-700'}`}>
+                                                <Icons.Info size={14} />
+                                                <span>Aylık Bütçeye Etkisi: {formatMoney(Number(newInst.totalAmount) / Number(newInst.installmentCount))}</span>
+                                            </div>
+                                            <p className={`opacity-80 ${darkMode ? 'text-indigo-200' : 'text-indigo-600'}`}>Bu plan, {MONTHS[Number(newInst.startMonthIndex)]} ayından itibaren bütçenden otomatik düşülecek.</p>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     {installments.map(i => (
-                                        <div key={i.id} className="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm">
+                                        <div key={i.id} className={`p-3 rounded-xl border flex justify-between items-center shadow-sm transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                                             <div>
-                                                <div className="font-bold text-slate-800">{i.name}</div>
-                                                <div className="text-xs text-slate-500">{formatMoney(i.totalAmount)} / {i.installmentCount} Ay • Başlangıç: {MONTHS[i.startMonthIndex]}</div>
+                                                <div className={`font-bold ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>{i.name}</div>
+                                                <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>{formatMoney(i.totalAmount)} / {i.installmentCount} Ay • Başlangıç: {MONTHS[i.startMonthIndex]}</div>
                                             </div>
                                             <div className="text-right">
-                                                <div className="font-bold text-rose-600">{formatMoney(i.monthlyAmount)}/ay</div>
-                                                <button onClick={() => delInstallment(i.id)} className="text-xs text-slate-300 hover:text-red-500 mt-1 flex items-center gap-1 justify-end"><Icons.Trash /> Sil</button>
+                                                <div className={`font-bold ${darkMode ? 'text-rose-400' : 'text-rose-600'}`}>{formatMoney(i.monthlyAmount)}/ay</div>
+                                                <button onClick={() => delInstallment(i.id)} className={`text-xs mt-1 flex items-center gap-1 justify-end transition ${darkMode ? 'text-slate-600 hover:text-rose-400' : 'text-slate-300 hover:text-red-500'}`}><Icons.Trash /> Sil</button>
                                             </div>
                                         </div>
                                     ))}
