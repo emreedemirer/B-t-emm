@@ -227,14 +227,14 @@ const Budget = ({ monthIdx, setMonthIdx, data, updateItem, addItem, delItem, tog
     const instTotal = monthInsts.reduce((a, b) => a + b.monthlyAmount, 0);
 
     return (
-        <div className="space-y-6 animate-fade-in pb-24 md:pb-0 h-full flex flex-col">
-            <div className="flex items-center justify-between bg-white p-2 rounded-2xl border shadow-sm shrink-0">
+        <div className="space-y-6 animate-fade-in pb-24 md:pb-0">
+            <div className="sticky top-0 z-10 flex items-center justify-between bg-white p-2 rounded-2xl border shadow-sm shrink-0">
                 <button onClick={() => setMonthIdx(Math.max(0, monthIdx - 1))} className="p-2 hover:bg-slate-100 rounded-lg disabled:opacity-30" disabled={monthIdx === 0}><Icon name="chevronLeft" /></button>
                 <span className="font-extrabold text-lg w-32 text-center text-slate-800">{MONTHS[monthIdx]}</span>
                 <button onClick={() => setMonthIdx(Math.min(11, monthIdx + 1))} className="p-2 hover:bg-slate-100 rounded-lg disabled:opacity-30" disabled={monthIdx === 11}><Icon name="chevronRight" /></button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 overflow-y-auto pb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-6">
                     <BudgetTable groupKey="income" title="Gelirler" colorInfo={{ bg: 'bg-emerald-50', text: 'text-emerald-800' }} items={data.income} onAdd={addItem} onUpdate={updateItem} onDelete={delItem} onToggle={togglePaid} />
                     <BudgetTable groupKey="savings" title="Tasarruflar" colorInfo={{ bg: 'bg-brand-50', text: 'text-brand-800' }} items={data.savings} onAdd={addItem} onUpdate={updateItem} onDelete={delItem} onToggle={togglePaid} />

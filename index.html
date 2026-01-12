@@ -336,14 +336,19 @@
                         {items.map((i, index) => (
                             <div
                                 key={i.id}
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, index)}
                                 onDragEnter={(e) => handleDragEnter(e, index)}
-                                onDragEnd={handleDragEnd}
                                 onDragOver={(e) => e.preventDefault()}
                                 className={`flex items-center gap-2 pb-2 border-b last:border-0 last:pb-0 transition-transform ${darkMode ? 'border-slate-700' : 'border-slate-100'} ${i.isPaid ? 'opacity-50' : ''}`}
                             >
-                                <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`} style={{ touchAction: 'none' }}><Icons.Drag /></div>
+                                <div
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, index)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+                                    style={{ touchAction: 'none' }}
+                                >
+                                    <Icons.Drag />
+                                </div>
                                 {i.isPaid && <Icons.Check className="text-emerald-500 ml-2" />}
                                 <input
                                     value={i.name}
@@ -620,6 +625,42 @@
 
                 return { catMonthly, catTotals, maxCat };
             }, [monthlyData]);
+
+            const getCategoryInsights = (catName) => {
+                if (!catName || !yearlyAnalysis.catMonthly[catName]) return null;
+                const data = yearlyAnalysis.catMonthly[catName];
+                const total = yearlyAnalysis.catTotals[catName];
+                const avg = total / 12;
+
+                let maxVal = 0;
+                let maxMonthIdx = 0;
+                data.forEach((v, i) => {
+                    if (v > maxVal) { maxVal = v; maxMonthIdx = i; }
+                });
+                const maxMonth = MONTHS[maxMonthIdx];
+
+                const currentVal = data[selectedMonthIndex];
+                let trendText = "";
+                if (currentVal > avg * 1.2) trendText = "Bu ay ortalamanın üzerinde harcama var.";
+                else if (currentVal < avg * 0.8 && currentVal > 0) trendText = "Bu ay ortalamanın altındasınız.";
+                else trendText = "Harcamalar ortalama düzeyde.";
+
+                let compareText = "";
+                if (selectedMonthIndex > 0) {
+                    const prev = data[selectedMonthIndex - 1];
+                    if (prev > 0) {
+                        const diff = currentVal - prev;
+                        const pct = (diff / prev) * 100;
+                        compareText = `Geçen aya göre %${Math.abs(pct).toFixed(0)} ${diff > 0 ? 'artış' : 'düşüş'}.`;
+                    } else {
+                        compareText = "Geçen ay işlem yoktu.";
+                    }
+                } else {
+                    compareText = "Yıl başlangıcı.";
+                }
+
+                return { total, avg, maxMonth, trendText, compareText };
+            };
 
             useEffect(() => {
                 if (notification) {
@@ -1225,26 +1266,31 @@
                                         {assets.map((a, index) => (
                                             <div
                                                 key={a.id}
-                                                draggable
-                                                onDragStart={(e) => {
-                                                    dragAssetItem.current = index;
-                                                    e.dataTransfer.effectAllowed = 'move';
-                                                    e.target.style.opacity = '0.5';
-                                                    e.target.style.transform = 'scale(1.02)';
-                                                }}
                                                 onDragEnter={(e) => {
                                                     dragOverAssetItem.current = index;
-                                                }}
-                                                onDragEnd={(e) => {
-                                                    e.target.style.opacity = '1';
-                                                    e.target.style.transform = 'scale(1)';
-                                                    reorderAsset();
                                                 }}
                                                 onDragOver={(e) => e.preventDefault()}
                                                 className={`grid grid-cols-12 gap-2 items-center p-3 border-b last:border-0 transition ${darkMode ? 'border-slate-700 hover:bg-slate-700/50' : 'border-slate-50 hover:bg-slate-50'}`}
                                             >
                                                 <div className="col-span-4 flex items-center gap-1">
-                                                    <div className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`} style={{ touchAction: 'none' }}><Icons.Drag /></div>
+                                                    <div
+                                                        draggable
+                                                        onDragStart={(e) => {
+                                                            dragAssetItem.current = index;
+                                                            e.dataTransfer.effectAllowed = 'move';
+                                                            e.target.style.opacity = '0.5';
+                                                            e.target.style.transform = 'scale(1.02)';
+                                                        }}
+                                                        onDragEnd={(e) => {
+                                                            e.target.style.opacity = '1';
+                                                            e.target.style.transform = 'scale(1)';
+                                                            reorderAsset();
+                                                        }}
+                                                        className={`cursor-move p-3 -ml-2 touch-manipulation ${darkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        style={{ touchAction: 'none' }}
+                                                    >
+                                                        <Icons.Drag />
+                                                    </div>
                                                     <input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full bg-transparent font-medium outline-none text-sm transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-300'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} />
                                                 </div>
                                                 <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
