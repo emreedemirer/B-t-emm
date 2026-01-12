@@ -491,7 +491,7 @@
             const totalAssetVal = assets.reduce((a, c) => a + (Number(c.totalValue) || 0), 0);
 
             // --- İŞLEMLER ---
-            const updateItem = (type, id, f, v) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].map(i => i.id === id ? { ...i, [f]: f === 'name' ? v : Number(v) } : i) } }));
+            const updateItem = (type, id, f, v) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].map(i => i.id === id ? { ...i, [f]: f === 'name' ? v : (v === '' ? '' : Number(v)) } : i) } }));
             const togglePaid = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].map(i => i.id === id ? { ...i, isPaid: !i.isPaid } : i) } }));
             const addItem = (type) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: [...p[selectedMonthIndex][type], { id: Date.now(), name: "", actual: 0, isPaid: false }] } }));
             const delItem = (type, id) => setMonthlyData(p => ({ ...p, [selectedMonthIndex]: { ...p[selectedMonthIndex], [type]: p[selectedMonthIndex][type].filter(i => i.id !== id) } }));
@@ -566,10 +566,10 @@
             const updateAsset = (id, field, val) => {
                 setAssets(prev => prev.map(a => {
                     if (a.id === id) {
-                        const newVal = field === 'type' ? val : (Number(val) || 0);
+                        const newVal = field === 'type' ? val : (val === '' ? '' : Number(val));
                         const updated = { ...a, [field]: newVal };
                         if (field === 'count' || field === 'unitPrice') {
-                            updated.totalValue = updated.count * updated.unitPrice;
+                            updated.totalValue = (Number(updated.count) || 0) * (Number(updated.unitPrice) || 0);
                         }
                         return updated;
                     }

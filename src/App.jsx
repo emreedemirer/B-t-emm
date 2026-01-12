@@ -271,8 +271,8 @@ const Assets = ({ assets, setAssets }) => {
     const updateAsset = (id, field, val) => {
         setAssets(assets.map(a => {
             if (a.id !== id) return a;
-            const u = { ...a, [field]: field === 'type' ? val : Number(val) };
-            u.total = u.count * u.unitPrice;
+            const u = { ...a, [field]: field === 'type' ? val : (val === '' ? '' : Number(val)) };
+            u.total = (Number(u.count) || 0) * (Number(u.unitPrice) || 0);
             return u;
         }));
     };
