@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f8fafc;
+            background-color: #e2e8f0;
         }
 
         .scrollbar-hide::-webkit-scrollbar {
@@ -319,7 +319,7 @@
             }
 
             return (
-                <div className={`border rounded-xl overflow-hidden mb-4 shadow-sm transition-colors ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                <div className={`border rounded-xl overflow-hidden mb-4 shadow-sm transition-colors ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                     {suggestions && (
                         <datalist id={listId}>
                             {suggestions.map(s => <option key={s} value={s} />)}
@@ -355,7 +355,7 @@
                                     onChange={(e) => onUpdate(type, i.id, 'name', e.target.value)}
                                     onFocus={(e) => { if (i.name === "Yeni Kalem") onUpdate(type, i.id, 'name', ""); }}
                                     list={suggestions ? listId : undefined}
-                                    className={`flex-1 text-sm bg-transparent outline-none font-medium transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-400'}`}
+                                    className={`flex-1 text-sm outline-none font-medium transition rounded-md px-2 py-1.5 ${darkMode ? 'bg-transparent text-slate-200 placeholder-slate-600' : 'bg-white border border-slate-300 text-slate-700 placeholder-slate-400 shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500'}`}
                                     placeholder="Kalem adı..."
                                     autoComplete="off"
                                 />
@@ -364,7 +364,7 @@
                                         type="number"
                                         value={i.actual}
                                         onChange={(e) => onUpdate(type, i.id, 'actual', e.target.value)}
-                                        className={`w-24 text-right text-sm border rounded-lg px-2 py-1 outline-none transition font-bold ${darkMode ? 'bg-slate-900 border-slate-700 text-slate-200 focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-indigo-500'}`}
+                                        className={`w-24 text-right text-sm border rounded-md px-2 py-1.5 outline-none transition font-bold ${darkMode ? 'bg-slate-900 border-slate-700 text-slate-200 focus:border-indigo-500' : 'bg-white border-slate-300 text-slate-700 focus:border-indigo-500 shadow-sm focus:ring-2 focus:ring-indigo-500/20'}`}
                                     />
                                 </div>
                                 <button onClick={() => onDelete(type, i.id)} className={`p-1 rounded transition ${darkMode ? 'text-slate-600 hover:text-rose-400 hover:bg-rose-900/20' : 'text-slate-300 hover:text-rose-500 hover:bg-rose-50'}`}><Icons.Trash /></button>
@@ -767,7 +767,7 @@
 
 
             return (
-                <div className={`flex flex-col md:flex-row min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-800'} w-full relative`}>
+                <div className={`flex flex-col md:flex-row min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-200 text-slate-800'} w-full relative`}>
 
                     {/* TOAST NOTIFICATION */}
                     <Toast />
@@ -924,63 +924,63 @@
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                                 {/* INCOME CARD */}
-                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                                                     <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-emerald-900/20 group-hover:bg-emerald-900/30' : 'bg-emerald-50 group-hover:bg-emerald-100'}`}></div>
                                                     <div className="relative z-10">
-                                                        <p className={`text-xs font-bold uppercase mb-1 flex justify-between pr-4 ${darkMode ? 'text-slate-400' : 'text-slate-400'}`}>TOPLAM GELİR {incDiff !== 0 && <span className={`text-[10px] ${incDiff > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{incDiff > 0 ? '▲' : '▼'} %{Math.abs(incPerc).toFixed(0)}</span>}</p>
-                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(s.inc)}</p>
-                                                        <p className={`text-[10px] mt-2 font-medium flex gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                                        <p className={`text-xs font-bold uppercase mb-1 flex justify-between pr-4 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>TOPLAM GELİR {incDiff !== 0 && <span className={`text-[10px] ${incDiff > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{incDiff > 0 ? '▲' : '▼'} %{Math.abs(incPerc).toFixed(0)}</span>}</p>
+                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>{formatMoney(s.inc)}</p>
+                                                        <p className={`text-[10px] mt-2 font-medium flex gap-2 opacity-80 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
                                                             <span>↻ Düzenli: {formatMoney(recurringInc)}</span>
                                                         </p>
                                                     </div>
                                                 </div>
 
                                                 {/* EXPENSE CARD */}
-                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                                                     <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-rose-900/20 group-hover:bg-rose-900/30' : 'bg-rose-50 group-hover:bg-rose-100'}`}></div>
                                                     <div className="relative z-10 w-full">
-                                                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">TOPLAM GİDER</p>
+                                                        <p className={`text-xs font-bold uppercase mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>TOPLAM GİDER</p>
                                                         <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(totalExp)}</p>
 
-                                                        <div className={`mt-3 flex gap-1 h-1.5 w-full rounded-full overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                                                        <div className={`mt-3 flex gap-1 h-1.5 w-full rounded-full overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
                                                             <div className="bg-rose-500" style={{ width: `${(s.bas / totalExp) * 100}%` }}></div>
                                                             <div className="bg-orange-400" style={{ width: `${(s.dis / totalExp) * 100}%` }}></div>
                                                         </div>
-                                                        <div className="flex justify-between text-[10px] mt-1 font-bold">
-                                                            <span className="text-rose-500">Zorunlu</span>
-                                                            <span className="text-orange-400">Keyfi %{discRatio.toFixed(0)}</span>
+                                                        <div className="flex justify-between text-[10px] mt-1 font-bold opacity-80">
+                                                            <span className="text-rose-600">Zorunlu</span>
+                                                            <span className="text-orange-500">Keyfi %{discRatio.toFixed(0)}</span>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* SAVINGS CARD */}
-                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
-                                                    <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-indigo-900/20 group-hover:bg-indigo-900/30' : 'bg-indigo-50 group-hover:bg-indigo-100'}`}></div>
+                                                <div className={`p-5 rounded-2xl border-2 shadow-md relative overflow-hidden group hover:shadow-lg transition transform hover:-translate-y-1 ${darkMode ? 'bg-slate-800 border-indigo-500/50 shadow-indigo-900/20' : 'bg-slate-50 border-indigo-100 shadow-indigo-50'}`}>
+                                                    <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-indigo-900/20 group-hover:bg-indigo-900/30' : 'bg-indigo-100 group-hover:bg-indigo-200'}`}></div>
                                                     <div className="relative z-10">
-                                                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">TASARRUF</p>
-                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(s.sav)}</p>
+                                                        <p className={`text-xs font-bold uppercase mb-1 ${darkMode ? 'text-indigo-300' : 'text-indigo-800/70'}`}>TASARRUF</p>
+                                                        <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-indigo-900'}`}>{formatMoney(s.sav)}</p>
                                                         {s.sav === 0 ? (
-                                                            <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">{netStatus > 0 ? "Artı bakiye tasarrufa aktarılmadı." : "Tasarruf için alan oluşmadı."}</p>
+                                                            <p className={`text-[10px] mt-2 font-medium flex items-center gap-1 opacity-70 ${darkMode ? 'text-slate-400' : 'text-indigo-800'}`}>{netStatus > 0 ? "Artı bakiye tasarrufa aktarılmadı." : "Tasarruf için alan oluşmadı."}</p>
                                                         ) : (
                                                             <div className="mt-2">
-                                                                <div className="flex justify-between text-[10px] text-slate-400 mb-0.5"><span>Hedef: {formatMoney(savTarget)}</span><span>%{savPercRange.toFixed(0)}</span></div>
-                                                                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><div className="h-full bg-indigo-500" style={{ width: `${Math.min(savPercRange, 100)}%` }}></div></div>
+                                                                <div className={`flex justify-between text-[10px] mb-0.5 ${darkMode ? 'text-indigo-300' : 'text-indigo-800'}`}><span>Hedef: {formatMoney(savTarget)}</span><span>%{savPercRange.toFixed(0)}</span></div>
+                                                                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-indigo-200'}`}><div className="h-full bg-indigo-600" style={{ width: `${Math.min(savPercRange, 100)}%` }}></div></div>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
 
                                                 {/* WEALTH CARD */}
-                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                                <div className={`p-5 rounded-2xl border shadow-sm relative overflow-hidden group hover:shadow-md transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                                     <div className={`absolute top-0 right-0 w-16 h-16 rounded-bl-full -mr-8 -mt-8 transition ${darkMode ? 'bg-amber-900/20 group-hover:bg-amber-900/30' : 'bg-amber-50 group-hover:bg-amber-100'}`}></div>
                                                     <div className="relative z-10">
-                                                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">TOPLAM SERVET</p>
+                                                        <p className={`text-xs font-bold uppercase mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>TOPLAM SERVET</p>
                                                         <p className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>{formatMoney(totalAssetVal)}</p>
                                                         <div className="mt-2 flex flex-col gap-0.5">
                                                             <p className="text-[10px] text-amber-600 font-bold">Son 30 gün: +{formatMoney(s.sav)}</p>
-                                                            <p className="text-[10px] text-slate-400 opacity-70">Geleceğiniz birikiyor.</p>
+                                                            <p className={`text-[10px] opacity-70 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Geleceğiniz birikiyor.</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -989,7 +989,7 @@
                                             {/* YILLIK TRENDLER & ANALİZ */}
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                                 {/* GENEL GRAFİK */}
-                                                <div className={`rounded-xl p-6 border shadow-sm transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                                <div className={`rounded-xl p-6 border shadow-sm transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                                     <div className="flex justify-between items-start mb-4">
                                                         <div>
                                                             <h3 className={`text-sm font-bold mb-1 flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}><Icons.Dashboard /> Yıllık Bütçe Özeti</h3>
@@ -1008,7 +1008,7 @@
                                                 </div>
 
                                                 {/* KATEGORİ DETAYI */}
-                                                <div className={`rounded-xl p-6 border shadow-sm relative transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                                <div className={`rounded-xl p-6 border shadow-sm relative transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                                     <div className="flex justify-between items-start mb-4">
                                                         <div>
                                                             <h3 className={`text-sm font-bold mb-1 flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}><Icons.Lightning /> Kategori Trendi</h3>
@@ -1059,7 +1059,7 @@
 
                         {activeTab === 'budget' && (
                             <div className="space-y-6 fade-in">
-                                <div className={`flex justify-between items-center p-2 rounded-xl border shadow-sm sticky top-0 z-20 mb-4 transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                <div className={`flex justify-between items-center p-2 rounded-xl border shadow-sm sticky top-0 z-20 mb-4 transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                     <h2 className={`text-lg md:text-xl font-bold pl-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>Bütçe Planı</h2>
                                     <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-md pb-1 scrollbar-hide">
                                         {MONTHS.map((m, i) => (
@@ -1115,7 +1115,7 @@
                                     return (
                                         <div className="space-y-6">
                                             {/* ÖZET KARTI */}
-                                            <div className={`p-4 rounded-xl border shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6 transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                                            <div className={`p-4 rounded-xl border shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6 transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                                                 {/* SOL: RAKAMLAR */}
                                                 <div className="space-y-4">
                                                     <div>
@@ -1180,7 +1180,7 @@
                                                     {insts.length > 0 && (
                                                         <div className={`border rounded-xl p-4 mb-4 transition relative overflow-hidden ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                                             <div className={`text-center mb-4 pb-4 border-b ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-                                                                <div className={`text-xs font-bold opacity-60 uppercase tracking-widest ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>AYLIK TOPLAM YÜK</div>
+                                                                <div className={`text-xs font-bold opacity-60 uppercase tracking-widest ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>AYLIK TUTAR</div>
                                                                 <div className={`text-2xl font-bold mt-1 ${darkMode ? 'text-rose-400' : 'text-rose-600'}`}>{formatMoney(s.instTot)} <span className="text-sm opacity-60">/ ay</span></div>
                                                             </div>
 
@@ -1217,7 +1217,7 @@
                         {activeTab === 'history' && (
                             <div className="space-y-6 fade-in">
                                 <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>İşlem Geçmişi</h2>
-                                <div className={`border rounded-xl overflow-hidden shadow-sm ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                <div className={`border rounded-xl overflow-hidden shadow-sm ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                     <table className="w-full text-sm text-left">
                                         <thead className={`text-xs uppercase ${darkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
                                             <tr><th className="p-4">Tarih</th><th className="p-4">Kategori</th><th className="p-4">Açıklama</th><th className="p-4 text-right">Tutar</th><th className="p-4"></th></tr>
@@ -1247,8 +1247,8 @@
                                     <div className="text-sm opacity-90 font-medium uppercase tracking-wide">Toplam Birikim Değeri</div>
                                     <div className="text-3xl md:text-4xl font-bold mt-1">{formatMoney(totalAssetVal)}</div>
                                 </div>
-                                <div className={`border rounded-xl overflow-visible transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                                    <div className={`p-4 border-b flex justify-between items-center relative ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                                <div className={`border rounded-xl overflow-visible transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                                    <div className={`p-4 border-b flex justify-between items-center relative ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
                                         <span className={`font-bold text-sm ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>PORTFÖY VARLIKLARI</span>
                                         <button onClick={addAsset} className={`text-xs font-bold flex gap-1 items-center px-3 py-2 rounded-lg transition ${darkMode ? 'bg-indigo-900/50 text-indigo-300 hover:bg-indigo-900' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}><Icons.Plus /> VARLIK EKLE</button>
                                     </div>
@@ -1291,10 +1291,10 @@
                                                     >
                                                         <Icons.Drag />
                                                     </div>
-                                                    <input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full bg-transparent font-medium outline-none text-sm transition ${darkMode ? 'text-slate-200 placeholder-slate-600' : 'text-slate-700 placeholder-slate-300'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} />
+                                                    <input list="assetList" value={a.type} onChange={(e) => updateAsset(a.id, 'type', e.target.value)} className={`w-full font-medium outline-none text-sm transition rounded-md px-2 py-1.5 ${darkMode ? 'bg-transparent text-slate-200 placeholder-slate-600' : 'bg-white border border-slate-300 text-slate-700 placeholder-slate-300 shadow-sm focus:ring-2 focus:ring-indigo-500/20'}`} placeholder="Seçiniz..." onFocus={(e) => e.target.value === 'Yeni' && updateAsset(a.id, 'type', '')} />
                                                 </div>
-                                                <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
-                                                <div className="col-span-2"><input type="number" value={a.unitPrice} onChange={(e) => updateAsset(a.id, 'unitPrice', e.target.value)} className={`w-full text-center border rounded px-1 text-sm h-8 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-200'}`} placeholder="0" /></div>
+                                                <div className="col-span-2"><input type="number" value={a.count} onChange={(e) => updateAsset(a.id, 'count', e.target.value)} className={`w-full text-center border rounded-md px-1 text-sm h-9 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-300 shadow-sm text-slate-700 focus:ring-2 focus:ring-indigo-500/20'}`} placeholder="0" /></div>
+                                                <div className="col-span-2"><input type="number" value={a.unitPrice} onChange={(e) => updateAsset(a.id, 'unitPrice', e.target.value)} className={`w-full text-center border rounded-md px-1 text-sm h-9 outline-none transition ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : 'bg-white border-slate-300 shadow-sm text-slate-700 focus:ring-2 focus:ring-indigo-500/20'}`} placeholder="0" /></div>
                                                 <div className={`col-span-3 text-right font-bold text-sm ${darkMode ? 'text-emerald-400' : 'text-slate-700'}`}>{formatMoney(a.totalValue)}</div>
                                                 <div className="col-span-1 text-center"><button onClick={() => delAsset(a.id)} className={`transition ${darkMode ? 'text-slate-600 hover:text-rose-400' : 'text-slate-300 hover:text-red-500'}`}><Icons.Trash /></button></div>
                                             </div>
@@ -1307,7 +1307,7 @@
                         {activeTab === 'installments' && (
                             <div className="space-y-6 fade-in">
                                 <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>Taksit Yöneticisi</h2>
-                                <div className={`border rounded-xl p-4 shadow-sm transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white'}`}>
+                                <div className={`border rounded-xl p-4 shadow-sm transition ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
                                     <div className={`text-sm font-bold mb-3 flex gap-2 items-center ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}><Icons.CreditCard /> Yeni Plan Ekle</div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
                                         <input placeholder="Ürün Adı" className={`border rounded p-2 text-sm col-span-2 outline-none ${darkMode ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-500' : 'bg-white border-slate-200'}`} value={newInst.name} onChange={(e) => setNewInst({ ...newInst, name: e.target.value })} />
